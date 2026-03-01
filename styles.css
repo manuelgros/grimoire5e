@@ -1,0 +1,23 @@
+/* Basic styling for the D&D 5E Reference TUI */
+
+Screen {
+    background: $surface;
+}
+
+Header, Footer {
+    background: $accent;
+    color: $text;
+}
+
+TabbedContent {
+    border: tall $accent;
+}
+
+TabPane {
+    padding: 1 2;
+}
+
+Static {
+    content-align: center middle;
+}
+
