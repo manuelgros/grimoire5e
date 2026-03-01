@@ -162,14 +162,14 @@ class DataLoader:
 
     def _load_items(self) -> List[Item]:
         items: List[Item] = []
-        file_path = self.data_dir / "items.json"
+        items_dir = self.data_dir / "items"
 
-        with open(file_path, "r", encoding="utf-8") as f:
+        # ── Standard magic items ──────────────────────────────────────────────
+        with open(items_dir / "items.json", "r", encoding="utf-8") as f:
             data = json.load(f)
             for item_data in data.get("item", []):
                 if item_data.get("source") not in ALLOWED_SOURCES:
                     continue
-
                 items.append(
                     Item(
                         name=item_data["name"],
@@ -188,7 +188,121 @@ class DataLoader:
                     )
                 )
 
+        # ── Base / mundane items ──────────────────────────────────────────────
+        with open(items_dir / "items-base.json", "r", encoding="utf-8") as f:
+            data = json.load(f)
+            for item_data in data.get("baseitem", []):
+                if item_data.get("source") not in ALLOWED_SOURCES:
+                    continue
+                items.append(
+                    Item(
+                        name=item_data["name"],
+                        source=item_data["source"],
+                        type=item_data.get("type", "G"),
+                        rarity=item_data.get("rarity", "none"),
+                        entries=item_data.get("entries", []),
+                        weight=item_data.get("weight"),
+                        value=item_data.get("value"),
+                        weapon=item_data.get("weapon", False),
+                        armor=item_data.get("armor", False),
+                    )
+                )
+
+        # ── Magic variants (Option A: one entry per variant) ──────────────────
+        with open(items_dir / "magicvariants.json", "r", encoding="utf-8") as f:
+            data = json.load(f)
+            for variant in data.get("magicvariant", []):
+                inh = variant.get("inherits", {})
+                if inh.get("source") not in ALLOWED_SOURCES:
+                    continue
+                requires = variant.get("requires", [])
+                items.append(
+                    Item(
+                        name=variant["name"],
+                        source=inh["source"],
+                        type=self._requires_to_type(requires),
+                        rarity=inh.get("rarity", "none"),
+                        entries=inh.get("entries", []),
+                        tier=inh.get("tier"),
+                        reqAttune=inh.get("reqAttune"),
+                        wondrous=inh.get("wondrous", False),
+                        requires_str=self._requires_to_str(requires),
+                    )
+                )
+
         return sorted(items, key=lambda i: i.name)
+
+    def _requires_to_type(self, requires: list) -> str:
+        """Derive a representative item type code from a magic variant's requires list."""
+        all_flags = {k for req in requires for k in req.keys()}
+        if "weapon" in all_flags or "weaponCategory" in all_flags or "sword" in all_flags:
+            return "M"
+        if "armor" in all_flags:
+            return "HA"
+        all_types = set()
+        for req in requires:
+            if "type" in req:
+                all_types.add(req["type"].split("|")[0])
+            if "name" in req:
+                name = req["name"].lower()
+                if any(w in name for w in [
+                    "sword", "axe", "blade", "spear", "bow", "dagger",
+                    "hammer", "mace", "glaive", "rapier", "scimitar",
+                    "sickle", "flail", "lance", "pike", "trident",
+                    "whip", "club", "quarterstaff", "maul", "halberd",
+                ]):
+                    all_types.add("M")
+                elif any(w in name for w in ["armor", "mail", "plate", "chain shirt"]):
+                    all_types.add("HA")
+        armor_types = {"HA", "MA", "LA"}
+        if all_types and all_types <= armor_types:
+            return "HA"
+        if "M" in all_types:
+            return "M"
+        if "R" in all_types:
+            return "R"
+        if "S" in all_types:
+            return "S"
+        return "G"
+
+    def _requires_to_str(self, requires: list) -> str:
+        """Convert a magic variant's requires list to a human-readable string."""
+        if not requires:
+            return ""
+        all_flags = {k for req in requires for k in req.keys()}
+        if "weapon" in all_flags:
+            return "any weapon"
+        if "sword" in all_flags:
+            return "any sword"
+        if "armor" in all_flags:
+            return "any armor"
+        if "weaponCategory" in all_flags:
+            cats = sorted(set(
+                req["weaponCategory"] for req in requires if "weaponCategory" in req
+            ))
+            return "any weapon" if set(cats) >= {"simple", "martial"} else f"any {' or '.join(cats)} weapon"
+        # Named item list
+        names = [req["name"] for req in requires if "name" in req]
+        if names:
+            return ", ".join(names)
+        # Type-code based
+        type_map = {
+            "M": "melee weapon", "R": "ranged weapon",
+            "HA": "heavy armor", "MA": "medium armor", "LA": "light armor",
+            "A": "ammunition", "AF": "ammunition", "S": "shield",
+        }
+        type_bases = list(dict.fromkeys(
+            req["type"].split("|")[0] for req in requires if "type" in req
+        ))
+        readable = list(dict.fromkeys(type_map.get(t, t) for t in type_bases if t in type_map))
+        armor_set = {"heavy armor", "medium armor", "light armor"}
+        if set(readable) >= armor_set:
+            return "any armor"
+        if len(readable) == 1:
+            return f"any {readable[0]}"
+        if readable:
+            return "any " + " or ".join(readable)
+        return ""
 
     def _load_feats(self) -> List[Feat]:
         feats: List[Feat] = []

@@ -22,6 +22,8 @@ class ItemDetailScreen(Screen):
         with Vertical():
             yield Static(f"[bold]{it.name}[/bold]", classes="title")
             yield Static(it.type_display)
+            if it.requires_str:
+                yield Static(f"Applies to: {it.requires_str}")
             yield Static(f"Rarity: {it.rarity_display}")
             if it.requires_attunement:
                 yield Static(it.attunement_display)

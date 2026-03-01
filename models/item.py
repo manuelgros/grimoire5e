@@ -48,6 +48,7 @@ class Item(BaseModel):
     armor: Optional[bool] = False
     wondrous: Optional[bool] = False
     baseItem: Optional[str] = None
+    requires_str: Optional[str] = None  # Human-readable "applies to" for magic variants
 
     @property
     def rarity_display(self) -> str:
