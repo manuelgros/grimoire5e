@@ -1,6 +1,7 @@
 import re
 from typing import Any, Dict, Generator, List, Tuple
 
+from rich.text import Text
 from textual.app import ComposeResult
 from textual.containers import ScrollableContainer, Vertical
 from textual.screen import Screen
@@ -8,6 +9,8 @@ from textual.widgets import Button, Static
 
 from models import Monster
 from services import SOURCE_FULL
+
+_STAT_COLOR = "#5f87ff"  # medium blue for stat block property labels
 
 # Section display order and labels
 _SECTIONS: List[Tuple[str, str]] = [
@@ -26,6 +29,13 @@ class MonsterDetailScreen(Screen):
         super().__init__()
         self.monster = monster
 
+    def _stat(self, label: str, value: str) -> Static:
+        """A property row with a colored bold label and plain value."""
+        t = Text()
+        t.append(label, style=f"bold {_STAT_COLOR}")
+        t.append(f" {value}")
+        return Static(t)
+
     def compose(self) -> ComposeResult:
         m = self.monster
         with Vertical():
@@ -34,39 +44,31 @@ class MonsterDetailScreen(Screen):
                 f"{m.size_display} {m.type_display}, {self._format_alignment(m.alignment)}"
             )
             yield Static("")
-            yield Static(f"[bold]Armor Class[/bold] {self._format_ac(m.ac)}")
-            yield Static(f"[bold]Hit Points[/bold] {self._format_hp(m.hp)}")
-            yield Static(f"[bold]Speed[/bold] {self._format_speed(m.speed)}")
+            yield self._stat("Armor Class", self._format_ac(m.ac))
+            yield self._stat("Hit Points", self._format_hp(m.hp))
+            yield self._stat("Speed", self._format_speed(m.speed))
             yield Static("")
             yield Static(self._format_ability_scores(m))
             yield Static("")
 
             with ScrollableContainer():
                 if m.save:
-                    yield Static(f"[bold]Saving Throws[/bold] {self._format_kv(m.save)}")
+                    yield self._stat("Saving Throws", self._format_kv(m.save))
                 if m.skill:
-                    yield Static(f"[bold]Skills[/bold] {self._format_kv(m.skill)}")
+                    yield self._stat("Skills", self._format_kv(m.skill))
                 if m.vulnerable:
-                    yield Static(
-                        f"[bold]Damage Vulnerabilities[/bold] {self._format_resist_immune(m.vulnerable)}"
-                    )
+                    yield self._stat("Damage Vulnerabilities", self._format_resist_immune(m.vulnerable))
                 if m.resist:
-                    yield Static(
-                        f"[bold]Damage Resistances[/bold] {self._format_resist_immune(m.resist)}"
-                    )
+                    yield self._stat("Damage Resistances", self._format_resist_immune(m.resist))
                 if m.immune:
-                    yield Static(
-                        f"[bold]Damage Immunities[/bold] {self._format_resist_immune(m.immune)}"
-                    )
+                    yield self._stat("Damage Immunities", self._format_resist_immune(m.immune))
                 if m.conditionImmune:
-                    yield Static(
-                        f"[bold]Condition Immunities[/bold] {self._format_resist_immune(m.conditionImmune)}"
-                    )
+                    yield self._stat("Condition Immunities", self._format_resist_immune(m.conditionImmune))
                 if m.senses:
-                    yield Static(f"[bold]Senses[/bold] {', '.join(m.senses)}")
+                    yield self._stat("Senses", ", ".join(m.senses))
                 if m.languages:
-                    yield Static(f"[bold]Languages[/bold] {', '.join(m.languages)}")
-                yield Static(f"[bold]Challenge[/bold] {m.cr_display}")
+                    yield self._stat("Languages", ", ".join(m.languages))
+                yield self._stat("Challenge", m.cr_display)
                 yield Static("")
 
                 for section_label, items in self._build_sections(m):

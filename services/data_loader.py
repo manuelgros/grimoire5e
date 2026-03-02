@@ -337,8 +337,6 @@ class DataLoader:
             for cond_data in data.get("condition", []):
                 if cond_data.get("source") != "XPHB":
                     continue
-                if cond_data.get("type") != "condition":
-                    continue
 
                 conditions.append(
                     Condition(

@@ -1,6 +1,7 @@
 import re
 from typing import Any, List
 
+from rich.text import Text
 from textual.app import ComposeResult
 from textual.containers import ScrollableContainer, Vertical
 from textual.screen import Screen
@@ -8,6 +9,16 @@ from textual.widgets import Button, Static
 
 from models import Item
 from services import SOURCE_FULL
+
+_LABEL_COLOR = "#5f87ff"
+
+_RARITY_COLORS = {
+    "Uncommon":  "#55cc55",
+    "Rare":      "#55cccc",
+    "Very Rare": "#cc55cc",
+    "Legendary": "#ffd700",
+    "Artifact":  "#cc5555",
+}
 
 
 class ItemDetailScreen(Screen):
@@ -17,14 +28,19 @@ class ItemDetailScreen(Screen):
         super().__init__()
         self.item = item
 
-    _RARITY_COLORS = {
-        "Uncommon": "green", "Rare": "cyan",
-        "Very Rare": "magenta", "Legendary": "gold1", "Artifact": "red",
-    }
+    def _stat(self, label: str, value: str) -> Static:
+        t = Text()
+        t.append(label, style=f"bold {_LABEL_COLOR}")
+        t.append(f" {value}")
+        return Static(t)
 
-    def _rarity_colored(self, rarity: str) -> str:
-        color = self._RARITY_COLORS.get(rarity)
-        return f"[{color}]{rarity}[/{color}]" if color else rarity
+    def _rarity_stat(self, rarity: str) -> Static:
+        t = Text()
+        t.append("Rarity:", style=f"bold {_LABEL_COLOR}")
+        t.append(" ")
+        color = _RARITY_COLORS.get(rarity)
+        t.append(rarity, style=color if color else "")
+        return Static(t)
 
     def compose(self) -> ComposeResult:
         it = self.item
@@ -32,14 +48,15 @@ class ItemDetailScreen(Screen):
             yield Static(f"[bold]{it.name}[/bold]", classes="title")
             yield Static(f"[bold]{it.type_display}[/bold]")
             if it.requires_str:
-                yield Static(f"[bold]Applies to:[/bold] {it.requires_str}")
-            yield Static(f"[bold]Rarity:[/bold] {self._rarity_colored(it.rarity_display)}")
+                yield self._stat("Applies to:", it.requires_str)
+            yield self._rarity_stat(it.rarity_display)
             if it.requires_attunement:
-                yield Static(f"[italic]{it.attunement_display}[/italic]")
+                t = Text(it.attunement_display, style="italic")
+                yield Static(t)
             if it.weight is not None:
-                yield Static(f"[bold]Weight:[/bold] {it.weight} lb.")
+                yield self._stat("Weight:", f"{it.weight} lb.")
             if it.value is not None:
-                yield Static(f"[bold]Value:[/bold] {self._format_value(it.value)}")
+                yield self._stat("Value:", self._format_value(it.value))
             yield Static("")
 
             with ScrollableContainer():

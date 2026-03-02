@@ -21,39 +21,83 @@ class ConditionDetailScreen(Screen):
         c = self.condition
         with Vertical():
             yield Static(f"[bold]{c.name}[/bold]", classes="title")
-            yield Static("[bold]Condition[/bold]")
+            yield Static("[bold yellow]Condition[/bold yellow]")
             yield Static("")
             with ScrollableContainer():
                 if c.entries:
-                    yield Static(self._format_entries(c.entries))
+                    for widget in self._render_entries(c.entries):
+                        yield widget
                 yield Static(f"\n[dim]Source: {SOURCE_FULL.get(c.source, c.source)}[/dim]")
             yield Button("Back", id="back")
 
     def _strip_tags(self, text: str) -> str:
         text = re.sub(r"\{@condition ([^|}]+)(?:\|[^}]*)?\}", r"\1", text)
+        text = re.sub(r"\{@variantrule ([^|}]+)(?:\|[^}]*)?\}", r"\1", text)
+        text = re.sub(r"\{@action ([^|}]+)(?:\|[^}]*)?\}", r"\1", text)
         text = re.sub(r"\{@\w+ ([^|}]+)(?:\|[^}]*)?\}", r"\1", text)
         return text.strip()
 
-    def _format_entries(self, entries: List[Any]) -> str:
-        def render(entry: Any) -> str:
+    def _render_entries(self, entries: List[Any]) -> List[Static]:
+        """Yield Static widgets for each top-level entry block."""
+        widgets: List[Static] = []
+        for entry in entries:
             if isinstance(entry, str):
-                return self._strip_tags(entry)
-            if isinstance(entry, dict):
+                text = self._strip_tags(entry)
+                if text:
+                    widgets.append(Static(text))
+                    widgets.append(Static(""))
+            elif isinstance(entry, dict):
                 e_type = entry.get("type")
                 if e_type == "list":
-                    return "\n".join(f"- {render(e)}" for e in entry.get("items", []))
-                if e_type in {"entries", "section"}:
+                    lines = "\n".join(f"  • {self._strip_tags(str(i))}" for i in entry.get("items", []))
+                    widgets.append(Static(lines))
+                    widgets.append(Static(""))
+                elif e_type == "table":
+                    widgets.append(Static(self._format_table(entry)))
+                    widgets.append(Static(""))
+                elif e_type in {"entries", "section"}:
+                    # May be a wrapper containing named sub-sections or plain text
                     header = entry.get("name")
-                    body = "\n".join(render(e) for e in entry.get("entries", []))
-                    return f"[bold]{header}[/bold]\n{body}" if header else body
-                if "entries" in entry:
-                    return "\n".join(render(e) for e in entry["entries"])
-                return str(entry)
-            if isinstance(entry, list):
-                return "\n".join(render(e) for e in entry)
-            return str(entry)
+                    if header:
+                        widgets.append(Static(f"[bold yellow]{header}[/bold yellow]"))
+                    for sub in self._render_entries(entry.get("entries", [])):
+                        widgets.append(sub)
+                else:
+                    # Fallback: inline render
+                    text = self._inline_render(entry)
+                    if text:
+                        widgets.append(Static(text))
+                        widgets.append(Static(""))
+        return widgets
 
-        return "\n\n".join(render(e) for e in entries)
+    def _inline_render(self, entry: Any) -> str:
+        if isinstance(entry, str):
+            return self._strip_tags(entry)
+        if isinstance(entry, dict):
+            e_type = entry.get("type")
+            if e_type == "list":
+                return "\n".join(f"  • {self._inline_render(i)}" for i in entry.get("items", []))
+            if e_type in {"entries", "section"}:
+                header = entry.get("name")
+                body = "\n".join(self._inline_render(e) for e in entry.get("entries", []))
+                return f"[bold yellow]{header}[/bold yellow]\n{body}" if header else body
+            if "entries" in entry:
+                return "\n".join(self._inline_render(e) for e in entry["entries"])
+            return str(entry)
+        if isinstance(entry, list):
+            return "\n".join(self._inline_render(e) for e in entry)
+        return str(entry)
+
+    def _format_table(self, table: dict) -> str:
+        col_labels = table.get("colLabels", [])
+        rows = table.get("rows", [])
+        lines = []
+        if col_labels:
+            lines.append("  ".join(f"[bold]{c}[/bold]" for c in col_labels))
+            lines.append("─" * 40)
+        for row in rows:
+            lines.append("  ".join(str(cell) for cell in row))
+        return "\n".join(lines)
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         if event.button.id == "back":

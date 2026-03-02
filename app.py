@@ -5,7 +5,7 @@ from textual.binding import Binding
 from textual.widgets import Footer, Header, Input, Static, TabbedContent, TabPane
 
 from services import DataLoader
-from views import SpellsView, MonstersView, ItemsView, FeatsView, QuickSearchView
+from views import SpellsView, MonstersView, ItemsView, FeatsView, ConditionsView, QuickSearchView
 
 
 class DnDReferenceApp(App):
@@ -49,7 +49,7 @@ class DnDReferenceApp(App):
             with TabPane("Feats", id="feats"):
                 yield FeatsView(self.data_loader.feats)
             with TabPane("Conditions", id="conditions"):
-                yield Static("Conditions View Coming Soon")
+                yield ConditionsView(self.data_loader.conditions)
         yield Footer()
 
     def action_switch_tab(self, tab_id: str) -> None:

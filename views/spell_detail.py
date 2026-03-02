@@ -1,6 +1,7 @@
 import re
 from typing import Any, Dict, List
 
+from rich.text import Text
 from textual.app import ComposeResult
 from textual.containers import ScrollableContainer, Vertical
 from textual.screen import Screen
@@ -8,6 +9,8 @@ from textual.widgets import Button, Static
 
 from models import Spell
 from services import SOURCE_FULL
+
+_LABEL_COLOR = "#5f87ff"
 
 
 class SpellDetailScreen(Screen):
@@ -17,14 +20,20 @@ class SpellDetailScreen(Screen):
         super().__init__()
         self.spell = spell
 
+    def _stat(self, label: str, value: str) -> Static:
+        t = Text()
+        t.append(label, style=f"bold {_LABEL_COLOR}")
+        t.append(f" {value}")
+        return Static(t)
+
     def compose(self) -> ComposeResult:
         with Vertical():
             yield Static(f"[bold]{self.spell.name}[/bold]", classes="title")
             yield Static(f"[bold]{self.spell.level_text} {self.spell.school_full}[/bold]")
-            yield Static(f"[bold]Casting Time:[/bold] {self.format_time(self.spell.time)}")
-            yield Static(f"[bold]Range:[/bold] {self.format_range(self.spell.range)}")
-            yield Static(f"[bold]Components:[/bold] {self.format_components(self.spell.components)}")
-            yield Static(f"[bold]Duration:[/bold] {self.format_duration(self.spell.duration)}")
+            yield self._stat("Casting Time:", self.format_time(self.spell.time))
+            yield self._stat("Range:", self.format_range(self.spell.range))
+            yield self._stat("Components:", self.format_components(self.spell.components))
+            yield self._stat("Duration:", self.format_duration(self.spell.duration))
 
             with ScrollableContainer():
                 yield Static(self.format_entries(self.spell.entries))
