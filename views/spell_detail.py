@@ -41,9 +41,8 @@ class SpellDetailScreen(Screen):
                 if self.spell.higher_level:
                     yield Static(self.format_entries(self.spell.higher_level))
 
-                yield Static(
-                    f"\n[dim]Classes: {', '.join(self.spell.classes_list)}[/dim]"
-                )
+                if self.spell.classes_list:
+                    yield Static(f"\n[dim]Classes: {', '.join(self.spell.classes_list)}[/dim]")
                 yield Static(f"[dim]Source: {SOURCE_FULL.get(self.spell.source, self.spell.source)}[/dim]")
 
             yield Button("Back", id="back")
