@@ -144,6 +144,19 @@ class SpellDetailScreen(Screen):
     def format_entries(self, entries: List[Any]) -> str:
         """Convert entry objects to formatted text."""
 
+        def render_table(entry: dict) -> str:
+            lines = []
+            caption = entry.get("caption")
+            if caption:
+                lines.append(f"[bold]{caption}[/bold]")
+            col_labels = entry.get("colLabels", [])
+            if col_labels:
+                lines.append("  ".join(f"[bold]{self._strip_tags(c)}[/bold]" for c in col_labels))
+                lines.append("─" * 40)
+            for row in entry.get("rows", []):
+                lines.append("  ".join(self._strip_tags(str(cell)) for cell in row))
+            return "\n".join(lines)
+
         def render_entry(entry: Any) -> str:
             if isinstance(entry, str):
                 return self._strip_tags(entry)
@@ -151,6 +164,8 @@ class SpellDetailScreen(Screen):
                 e_type = entry.get("type")
                 if e_type == "list":
                     return "\n".join(f"- {render_entry(e)}" for e in entry.get("items", []))
+                if e_type == "table":
+                    return render_table(entry)
                 if e_type in {"entries", "section"}:
                     header = entry.get("name")
                     body = "\n".join(render_entry(e) for e in entry.get("entries", []))
