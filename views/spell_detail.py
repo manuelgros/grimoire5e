@@ -1,3 +1,4 @@
+import re
 from typing import Any, Dict, List
 
 from textual.app import ComposeResult
@@ -29,7 +30,6 @@ class SpellDetailScreen(Screen):
                 yield Static(self.format_entries(self.spell.entries))
 
                 if self.spell.higher_level:
-                    yield Static("[bold]At Higher Levels:[/bold]")
                     yield Static(self.format_entries(self.spell.higher_level))
 
                 yield Static(
@@ -113,12 +113,32 @@ class SpellDetailScreen(Screen):
                 parts.append(d_type or "—")
         return ", ".join(parts) if parts else "—"
 
+    def _strip_tags(self, text: str) -> str:
+        # scaledamage: {@scaledamage 2d8|1-9|1d8} → 2d8
+        text = re.sub(r"\{@scaledamage ([^|]+)\|[^}]*\}", r"\1", text)
+        text = re.sub(r"\{@damage ([^}]+)\}", r"\1", text)
+        text = re.sub(r"\{@dice ([^}]+)\}", r"\1", text)
+        text = re.sub(r"\{@hit ([^}]+)\}", r"+\1", text)
+        text = re.sub(r"\{@dc ([^}]+)\}", r"DC \1", text)
+        text = re.sub(r"\{@condition ([^|}]+)(?:\|[^}]*)?\}", r"\1", text)
+        text = re.sub(r"\{@spell ([^|}]+)(?:\|[^}]*)?\}", r"\1", text)
+        text = re.sub(r"\{@creature ([^|}]+)(?:\|[^}]*)?\}", r"\1", text)
+        text = re.sub(r"\{@item ([^|}]+)(?:\|[^}]*)?\}", r"\1", text)
+        text = re.sub(r"\{@action ([^|}]+)(?:\|[^}]*)?\}", r"\1", text)
+        text = re.sub(r"\{@skill ([^|}]+)(?:\|[^}]*)?\}", r"\1", text)
+        text = re.sub(r"\{@feat ([^|}]+)(?:\|[^}]*)?\}", r"\1", text)
+        text = re.sub(r"\{@b ([^}]+)\}", r"\1", text)
+        text = re.sub(r"\{@i ([^}]+)\}", r"\1", text)
+        # Generic fallback
+        text = re.sub(r"\{@\w+ ([^|}]+)(?:\|[^}]*)?\}", r"\1", text)
+        return text
+
     def format_entries(self, entries: List[Any]) -> str:
         """Convert entry objects to formatted text."""
 
         def render_entry(entry: Any) -> str:
             if isinstance(entry, str):
-                return entry
+                return self._strip_tags(entry)
             if isinstance(entry, dict):
                 e_type = entry.get("type")
                 if e_type == "list":
