@@ -94,6 +94,18 @@ class BaseListView(Vertical):
                 event.stop()
             # Tab from list: let Textual's default behavior take over → goes to tab bar
 
+        elif event.key == "shift+tab":
+            filter_widgets = list(self.query("#filters Select, #filters Checkbox"))
+            if isinstance(focused, (Select, Checkbox)) and focused in filter_widgets:
+                # Shift+Tab from any filter → jump back to search
+                self.query_one("#search", Input).focus()
+                event.stop()
+            elif isinstance(focused, ListView) and focused.id == "results":
+                # Shift+Tab from list → jump to first filter
+                if filter_widgets:
+                    filter_widgets[0].focus()
+                    event.stop()
+
     def show_detail(self, item: Any) -> None:
         """Override in subclass to push a detail screen."""
         # Default implementation does nothing.
