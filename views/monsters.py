@@ -90,7 +90,11 @@ class MonstersView(BaseListView):
 
     def create_list_item(self, monster: Monster) -> ListItem:
         ac = self._get_ac(monster)
-        hp = monster.hp.get("special") or monster.hp.get("average", "?")
+        special = monster.hp.get("special")
+        if special is not None:
+            hp = special if str(special).isdigit() else "?"
+        else:
+            hp = monster.hp.get("average", "?")
         source_label = SOURCE_SHORT.get(monster.source, monster.source)
         label = (
             f"{monster.name} • {monster.size_display} {monster.type_display}"
