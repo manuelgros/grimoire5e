@@ -5,6 +5,7 @@ from .items import ItemsView
 from .feats import FeatsView
 from .conditions import ConditionsView
 from .quick_search import QuickSearchView
+from .settings import SettingsView
 
-__all__ = ["BaseListView", "SpellsView", "MonstersView", "ItemsView", "FeatsView", "ConditionsView", "QuickSearchView"]
+__all__ = ["BaseListView", "SpellsView", "MonstersView", "ItemsView", "FeatsView", "ConditionsView", "QuickSearchView", "SettingsView"]
 

@@ -1,11 +1,13 @@
 from pathlib import Path
+from typing import List
 
 from textual.app import App, ComposeResult
 from textual.binding import Binding
 from textual.widgets import Footer, Header, Input, Static, TabbedContent, TabPane
 
 from services import DataLoader
-from views import SpellsView, MonstersView, ItemsView, FeatsView, ConditionsView, QuickSearchView
+from views import SpellsView, MonstersView, ItemsView, FeatsView, ConditionsView, QuickSearchView, SettingsView
+from views.settings import DEFAULT_ACTIVE_SOURCES
 
 
 class DnDReferenceApp(App):
@@ -22,35 +24,75 @@ class DnDReferenceApp(App):
         Binding("ctrl+4", "switch_tab('items')", "Items", show=False),
         Binding("ctrl+5", "switch_tab('feats')", "Feats", show=False),
         Binding("ctrl+6", "switch_tab('conditions')", "Conditions", show=False),
+        Binding("ctrl+7", "switch_tab('settings')", "Settings", show=False),
         Binding("/", "focus_search", "Search", show=True),
     ]
 
     def __init__(self) -> None:
         super().__init__()
         self.data_loader = DataLoader(Path("data"))
+        self.active_sources: set = set(DEFAULT_ACTIVE_SOURCES)
+
+    def _filter(self, items: List) -> List:
+        """Return only items whose source is currently active."""
+        return [item for item in items if item.source in self.active_sources]
 
     def compose(self) -> ComposeResult:
         yield Header()
         with TabbedContent(initial="quick"):
             with TabPane("Quick Search", id="quick"):
                 yield QuickSearchView(
-                    spells=self.data_loader.spells,
-                    monsters=self.data_loader.monsters,
-                    items=self.data_loader.items,
-                    feats=self.data_loader.feats,
-                    conditions=self.data_loader.conditions,
+                    spells=self._filter(self.data_loader.spells),
+                    monsters=self._filter(self.data_loader.monsters),
+                    items=self._filter(self.data_loader.items),
+                    feats=self._filter(self.data_loader.feats),
+                    conditions=self._filter(self.data_loader.conditions),
                 )
             with TabPane("Spells", id="spells"):
-                yield SpellsView(self.data_loader.spells)
+                yield SpellsView(self._filter(self.data_loader.spells))
             with TabPane("Monsters", id="monsters"):
-                yield MonstersView(self.data_loader.monsters)
+                yield MonstersView(
+                    self._filter(self.data_loader.monsters),
+                    active_sources=self.active_sources,
+                )
             with TabPane("Items", id="items"):
-                yield ItemsView(self.data_loader.items)
+                yield ItemsView(
+                    self._filter(self.data_loader.items),
+                    active_sources=self.active_sources,
+                )
             with TabPane("Feats", id="feats"):
-                yield FeatsView(self.data_loader.feats)
+                yield FeatsView(
+                    self._filter(self.data_loader.feats),
+                    active_sources=self.active_sources,
+                )
             with TabPane("Conditions", id="conditions"):
-                yield ConditionsView(self.data_loader.conditions)
+                yield ConditionsView(self._filter(self.data_loader.conditions))
+            with TabPane("Settings", id="settings"):
+                yield SettingsView()
         yield Footer()
+
+    def on_settings_view_sources_changed(self, event: SettingsView.SourcesChanged) -> None:
+        """Reload all views whenever the user toggles a source in Settings."""
+        self.active_sources = event.active_sources
+
+        spells = self._filter(self.data_loader.spells)
+        monsters = self._filter(self.data_loader.monsters)
+        items = self._filter(self.data_loader.items)
+        feats = self._filter(self.data_loader.feats)
+        conditions = self._filter(self.data_loader.conditions)
+
+        self.query_one(SpellsView).reload(spells, self.active_sources)
+        self.query_one(MonstersView).reload(monsters, self.active_sources)
+        self.query_one(ItemsView).reload(items, self.active_sources)
+        self.query_one(FeatsView).reload(feats, self.active_sources)
+        self.query_one(ConditionsView).reload(conditions, self.active_sources)
+        self.query_one(QuickSearchView).reload({
+            "spell": spells,
+            "monster": monsters,
+            "item": items,
+            "feat": feats,
+            "condition": conditions,
+        })
 
     def action_switch_tab(self, tab_id: str) -> None:
         """Switch to specified tab."""
@@ -64,5 +106,3 @@ class DnDReferenceApp(App):
             pane.query_one("#search", Input).focus()
         except Exception:
             pass
-
-

@@ -38,3 +38,11 @@ Static {
 #shortcuts {
     color: $text-muted;
 }
+
+/* Settings: 2-column grid of source checkboxes */
+#source_list {
+    layout: grid;
+    grid-size: 2;
+    grid-gutter: 0 2;
+    height: auto;
+}

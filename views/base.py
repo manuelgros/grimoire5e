@@ -124,6 +124,19 @@ class BaseListView(Vertical):
                     filter_widgets[0].focus()
                     event.stop()
 
+    def apply_filters(self) -> None:
+        """Override in subclass to apply specific filters; default just refreshes."""
+        self.filtered_items = self.items
+        self.update_results_list()
+
+    def reload(self, new_items: List[Any], active_sources: set) -> None:
+        """Update the master item list when active sources change."""
+        self.all_items = new_items
+        self.items = new_items
+        self.filtered_items = new_items
+        if self._loaded:
+            self.apply_filters()
+
     def show_detail(self, item: Any) -> None:
         """Override in subclass to push a detail screen."""
         # Default implementation does nothing.

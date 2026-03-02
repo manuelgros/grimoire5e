@@ -125,6 +125,12 @@ class QuickSearchView(Vertical):
         if new_items:
             lv.mount(*new_items)
 
+    def reload(self, collections: dict) -> None:
+        """Update all data collections when active sources change."""
+        self._collections = collections
+        self._results = []
+        self._update_list()
+
     def on_list_view_selected(self, event: ListView.Selected) -> None:
         idx = event.index
         if not (0 <= idx < len(self._results)):
