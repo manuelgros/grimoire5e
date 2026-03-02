@@ -1,12 +1,16 @@
-from typing import Any, List
+from typing import Any, List, Optional
 
 from textual import events
 from textual.app import ComposeResult
 from textual.containers import Container, Vertical
 from textual.reactive import reactive
+from textual.timer import Timer
 from textual.widgets import Checkbox, Input, Label, ListItem, ListView, Select, Static
 
 from services import SearchService
+
+
+MAX_DISPLAY = 100  # cap rendered list items; benchmark shows ~24ms for 100, ~162ms for 575
 
 
 class BaseListView(Vertical):
@@ -22,6 +26,8 @@ class BaseListView(Vertical):
         self.all_items: List[Any] = items
         self.items = items
         self.filtered_items = items
+        self._search_timer: Optional[Timer] = None
+        self._loaded: bool = False
 
     def compose(self) -> ComposeResult:
         yield Input(placeholder="Search...", id="search")
@@ -29,18 +35,22 @@ class BaseListView(Vertical):
         yield Static("", id="results_count")
         yield ListView(id="results")
 
-    def on_mount(self) -> None:
-        """Populate the list when the view is shown."""
-        self.update_results_list()
+    def on_show(self) -> None:
+        """Populate the list the first time this tab becomes visible."""
+        if not self._loaded:
+            self._loaded = True
+            self.update_results_list()
 
     def render_filters(self) -> Container:
         """Override in subclass to add specific filters."""
         return Container()
 
     def on_input_changed(self, event: Input.Changed) -> None:
-        """Handle search input."""
+        """Handle search input with debounce to avoid re-rendering on every keystroke."""
         if event.input.id == "search":
-            self.perform_search(event.value)
+            if self._search_timer is not None:
+                self._search_timer.stop()
+            self._search_timer = self.set_timer(0.15, lambda: self.perform_search(event.value))
 
     def perform_search(self, query: str) -> None:
         """Search and update results."""
@@ -48,14 +58,22 @@ class BaseListView(Vertical):
         self.update_results_list()
 
     def update_results_list(self) -> None:
-        """Update the ListView with current filtered_items."""
+        """Update the ListView with current filtered_items, capped at MAX_DISPLAY."""
         list_view = self.query_one("#results", ListView)
         list_view.clear()
-        for item in self.filtered_items:
-            list_view.append(self.create_list_item(item))
-        self.query_one("#results_count", Static).update(
-            f"{self.result_noun} shown: {len(self.filtered_items)} / {len(self.all_items)}"
-        )
+        total_filtered = len(self.filtered_items)
+        display = self.filtered_items[:MAX_DISPLAY]
+        new_items = [self.create_list_item(item) for item in display]
+        if new_items:
+            list_view.mount(*new_items)
+        shown = len(display)
+        if shown < total_filtered:
+            count_text = f"Showing first {shown} of {total_filtered} {self.result_noun} — type to filter"
+        elif total_filtered < len(self.all_items):
+            count_text = f"{total_filtered} {self.result_noun} found"
+        else:
+            count_text = f"{self.result_noun}: {total_filtered}"
+        self.query_one("#results_count", Static).update(count_text)
 
     def create_list_item(self, item: Any) -> ListItem:
         """Override in subclass to create item representation."""

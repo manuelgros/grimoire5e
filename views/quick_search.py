@@ -1,7 +1,8 @@
-from typing import Any, List, Tuple
+from typing import Any, List, Optional, Tuple
 
 from textual.app import ComposeResult
 from textual.containers import Vertical
+from textual.timer import Timer
 from textual.widgets import Input, Label, ListItem, ListView, Static
 
 from models import Condition, Feat, Item, Monster, Spell
@@ -47,6 +48,7 @@ class QuickSearchView(Vertical):
             "condition": conditions,
         }
         self._results: List[Tuple[str, Any]] = []
+        self._search_timer: Optional[Timer] = None
 
     def compose(self) -> ComposeResult:
         yield Input(
@@ -58,7 +60,9 @@ class QuickSearchView(Vertical):
 
     def on_input_changed(self, event: Input.Changed) -> None:
         if event.input.id == "search":
-            self._perform_search(event.value)
+            if self._search_timer is not None:
+                self._search_timer.stop()
+            self._search_timer = self.set_timer(0.15, lambda: self._perform_search(event.value))
 
     def _parse_query(self, query: str) -> Tuple[str, str]:
         """Return (category_key, search_term). category_key is '' for all."""
@@ -113,10 +117,13 @@ class QuickSearchView(Vertical):
         return item.name
 
     def _update_list(self) -> None:
+        from .base import MAX_DISPLAY
         lv = self.query_one("#results", ListView)
         lv.clear()
-        for type_key, item in self._results:
-            lv.append(ListItem(Label(self._make_label(type_key, item))))
+        display = self._results[:MAX_DISPLAY]
+        new_items = [ListItem(Label(self._make_label(type_key, item))) for type_key, item in display]
+        if new_items:
+            lv.mount(*new_items)
 
     def on_list_view_selected(self, event: ListView.Selected) -> None:
         idx = event.index
