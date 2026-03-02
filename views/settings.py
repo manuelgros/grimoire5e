@@ -7,7 +7,7 @@ from textual.widgets import Checkbox, Static
 from services import SOURCE_FULL
 
 # Sources active by default on first launch
-DEFAULT_ACTIVE_SOURCES: set = {"XPHB", "XDMG", "XMM"}
+DEFAULT_ACTIVE_SOURCES: set = set(SOURCE_FULL.keys())
 
 
 class SettingsView(Vertical):
