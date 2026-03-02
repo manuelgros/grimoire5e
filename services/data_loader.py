@@ -5,7 +5,7 @@ from typing import List, Optional
 from models import Spell, Monster, Item, Feat, Condition, cr_to_float
 
 
-ALLOWED_SOURCES = {"XPHB", "XDMG", "XMM", "XGE", "TCE", "BGG"}
+ALLOWED_SOURCES = {"XPHB", "XDMG", "XMM", "XGE", "TCE", "BGG", "FleeMortals"}
 
 
 class DataLoader:
@@ -88,17 +88,25 @@ class DataLoader:
         return sorted(spells, key=lambda s: (s.level, s.name))
 
     def _load_legendary_groups(self) -> dict:
-        """Return a (name, source) → group dict from legendarygroups.json."""
-        path = self.data_dir / "bestiary" / "legendarygroups.json"
-        if not path.exists():
-            return {}
-        with open(path, "r", encoding="utf-8") as f:
-            data = json.load(f)
-        return {
-            (g["name"], g["source"]): g
-            for g in data.get("legendaryGroup", [])
-            if "_copy" not in g
-        }
+        """Return a (name, source) → group dict from all bestiary files."""
+        groups: dict = {}
+        bestiary_dir = self.data_dir / "bestiary"
+        # Dedicated legendary groups file
+        lg_path = bestiary_dir / "legendarygroups.json"
+        if lg_path.exists():
+            with open(lg_path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            for g in data.get("legendaryGroup", []):
+                if "_copy" not in g:
+                    groups[(g["name"], g["source"])] = g
+        # Also load legendaryGroup arrays embedded in individual bestiary files
+        for file_path in sorted(bestiary_dir.glob("bestiary-*.json")):
+            with open(file_path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            for g in data.get("legendaryGroup", []):
+                if "_copy" not in g:
+                    groups[(g["name"], g["source"])] = g
+        return groups
 
     def _resolve_legendary_group(self, ref, groups: dict):
         if not ref:
@@ -137,7 +145,7 @@ class DataLoader:
                             int=monster_data["int"],
                             wis=monster_data["wis"],
                             cha=monster_data["cha"],
-                            cr=monster_data["cr"],
+                            cr=monster_data.get("cr"),
                             save=monster_data.get("save"),
                             skill=monster_data.get("skill"),
                             vulnerable=monster_data.get("vulnerable"),

@@ -34,6 +34,8 @@ TYPE_OPTIONS = [
     ("Ooze", "ooze"),
     ("Plant", "plant"),
     ("Undead", "undead"),
+    ("Minion (FM!)", "minion"),
+    ("Companion (FM!)", "companion"),
 ]
 
 SIZE_OPTIONS = [
@@ -50,6 +52,7 @@ SOURCE_OPTIONS = [
     ("All Sources", None),
     ("Monster Manual (2025)", "XMM"),
     ("Bigby Presents: Glory of the Giants", "BGG"),
+    ("Flee, Mortals!", "FleeMortals"),
 ]
 
 
@@ -69,7 +72,7 @@ class MonstersView(BaseListView):
 
     def create_list_item(self, monster: Monster) -> ListItem:
         ac = self._get_ac(monster)
-        hp = monster.hp.get("average", "?")
+        hp = monster.hp.get("special") or monster.hp.get("average", "?")
         source_label = SOURCE_SHORT.get(monster.source, monster.source)
         label = (
             f"{monster.name} • {monster.size_display} {monster.type_display}"
@@ -86,9 +89,10 @@ class MonstersView(BaseListView):
         return "?"
 
     def _base_types(self, monster: Monster) -> list:
-        """Return a list of lowercase type strings for filter matching.
+        """Return a list of lowercase type/tag strings for filter matching.
 
         Handles plain strings, dicts with a 'type' key (string or choose-dict).
+        Also includes tags (e.g. 'Minion') lowercased for tag-based filtering.
         e.g. Empyrean: {"type": {"choose": ["celestial","fiend"]}} → ["celestial","fiend"]
         """
         t = monster.type
@@ -97,9 +101,13 @@ class MonstersView(BaseListView):
         if isinstance(t, dict):
             inner = t.get("type", "")
             if isinstance(inner, str):
-                return [inner.lower()]
-            if isinstance(inner, dict):
-                return [c.lower() for c in inner.get("choose", [])]
+                types = [inner.lower()]
+            elif isinstance(inner, dict):
+                types = [c.lower() for c in inner.get("choose", [])]
+            else:
+                types = []
+            tags = [tag.lower() for tag in t.get("tags", [])]
+            return types + tags
         return []
 
     def on_select_changed(self, event: Select.Changed) -> None:

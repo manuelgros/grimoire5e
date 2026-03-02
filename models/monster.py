@@ -45,9 +45,11 @@ class Monster(BaseModel):
 
     @property
     def cr_display(self) -> str:
+        if self.cr is None:
+            return "—"
         if isinstance(self.cr, dict):
-            return self.cr["cr"]
-        return self.cr
+            return self.cr.get("cr", "—")
+        return str(self.cr)
 
     @property
     def type_display(self) -> str:

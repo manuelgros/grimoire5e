@@ -6,6 +6,7 @@ SOURCE_FULL: dict = {
     "XGE": "Xanathar's Guide to Everything",
     "TCE": "Tasha's Cauldron of Everything",
     "BGG": "Bigby Presents: Glory of the Giants",
+    "FleeMortals": "Flee, Mortals!",
 }
 
 # Maps raw source codes → short labels (used in list views)
@@ -16,6 +17,7 @@ SOURCE_SHORT: dict = {
     "XGE":  "XGE",
     "TCE":  "TCE",
     "BGG":  "BGG",
+    "FleeMortals": "FM!",
 }
 
 # Filter dropdown options — display full title, value is the raw source code
@@ -27,4 +29,5 @@ SOURCE_OPTIONS: list = [
     ("Xanathar's Guide to Everything", "XGE"),
     ("Tasha's Cauldron of Everything", "TCE"),
     ("Bigby Presents: Glory of the Giants", "BGG"),
+    ("Flee, Mortals!", "FleeMortals"),
 ]

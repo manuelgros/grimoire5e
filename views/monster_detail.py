@@ -12,6 +12,25 @@ from services import SOURCE_FULL
 
 _STAT_COLOR = "#5f87ff"  # medium blue for stat block property labels
 
+_ATK_MAP = {
+    "m":     "Melee Attack",
+    "mw":    "Melee Weapon Attack",
+    "rw":    "Ranged Weapon Attack",
+    "ms":    "Melee Spell Attack",
+    "rs":    "Ranged Spell Attack",
+    "mp":    "Melee Power Attack",
+    "rp":    "Ranged Power Attack",
+    "mw,rw": "Melee or Ranged Weapon Attack",
+    "ms,rs": "Melee or Ranged Spell Attack",
+    "mp,rp": "Melee or Ranged Power Attack",
+}
+
+_ATKR_MAP = {
+    "m":   "Melee Attack Roll",
+    "r":   "Ranged Attack Roll",
+    "m,r": "Melee or Ranged Attack Roll",
+}
+
 # Section display order and labels
 _SECTIONS: List[Tuple[str, str]] = [
     ("trait",     "Traits"),
@@ -136,6 +155,16 @@ class MonsterDetailScreen(Screen):
             lambda m: f"(Recharge {m.group(1)}-6)" if m.group(1) else "(Recharge 6)",
             text,
         )
+        text = re.sub(
+            r"\{@atk ([^}]+)\}",
+            lambda m: _ATK_MAP.get(m.group(1).strip(), m.group(1)),
+            text,
+        )
+        text = re.sub(
+            r"\{@atkr ([^}]+)\}",
+            lambda m: _ATKR_MAP.get(m.group(1).strip(), m.group(1)),
+            text,
+        )
         text = re.sub(r"\{@hit ([^}]+)\}", r"+\1", text)
         text = re.sub(r"\{@dc ([^}]+)\}", r"DC \1", text)
         text = re.sub(r"\{@(?:damage|dice) ([^}]+)\}", r"\1", text)
@@ -167,6 +196,8 @@ class MonsterDetailScreen(Screen):
         return ", ".join(parts) if parts else "—"
 
     def _format_hp(self, hp: Dict[str, Any]) -> str:
+        if "special" in hp:
+            return str(hp["special"])
         avg = hp.get("average", "?")
         formula = hp.get("formula")
         return f"{avg} ({formula})" if formula else str(avg)
