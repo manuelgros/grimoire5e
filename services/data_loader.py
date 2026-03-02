@@ -322,6 +322,7 @@ class DataLoader:
                         prerequisite=feat_data.get("prerequisite"),
                         ability=feat_data.get("ability"),
                         repeatable=feat_data.get("repeatable", False),
+                        category=feat_data.get("category"),
                     )
                 )
 

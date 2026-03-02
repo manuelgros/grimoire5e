@@ -10,6 +10,7 @@ class Feat(BaseModel):
     prerequisite: Optional[List[Dict[str, Any]]] = None
     ability: Optional[List[Dict[str, Any]]] = None
     repeatable: Optional[bool] = False
+    category: Optional[str] = None
 
     @property
     def has_prerequisite(self) -> bool:
