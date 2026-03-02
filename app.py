@@ -5,7 +5,7 @@ from textual.binding import Binding
 from textual.widgets import Footer, Header, Input, Static, TabbedContent, TabPane
 
 from services import DataLoader
-from views import SpellsView, MonstersView, ItemsView, FeatsView
+from views import SpellsView, MonstersView, ItemsView, FeatsView, QuickSearchView
 
 
 class DnDReferenceApp(App):
@@ -16,11 +16,12 @@ class DnDReferenceApp(App):
 
     BINDINGS = [
         Binding("q", "quit", "Quit", show=True),
-        Binding("ctrl+1", "switch_tab('spells')", "Spells", show=False),
-        Binding("ctrl+2", "switch_tab('monsters')", "Monsters", show=False),
-        Binding("ctrl+3", "switch_tab('items')", "Items", show=False),
-        Binding("ctrl+4", "switch_tab('feats')", "Feats", show=False),
-        Binding("ctrl+5", "switch_tab('conditions')", "Conditions", show=False),
+        Binding("ctrl+1", "switch_tab('quick')", "Quick Search", show=False),
+        Binding("ctrl+2", "switch_tab('spells')", "Spells", show=False),
+        Binding("ctrl+3", "switch_tab('monsters')", "Monsters", show=False),
+        Binding("ctrl+4", "switch_tab('items')", "Items", show=False),
+        Binding("ctrl+5", "switch_tab('feats')", "Feats", show=False),
+        Binding("ctrl+6", "switch_tab('conditions')", "Conditions", show=False),
         Binding("/", "focus_search", "Search", show=True),
     ]
 
@@ -30,7 +31,15 @@ class DnDReferenceApp(App):
 
     def compose(self) -> ComposeResult:
         yield Header()
-        with TabbedContent(initial="spells"):
+        with TabbedContent(initial="quick"):
+            with TabPane("Quick Search", id="quick"):
+                yield QuickSearchView(
+                    spells=self.data_loader.spells,
+                    monsters=self.data_loader.monsters,
+                    items=self.data_loader.items,
+                    feats=self.data_loader.feats,
+                    conditions=self.data_loader.conditions,
+                )
             with TabPane("Spells", id="spells"):
                 yield SpellsView(self.data_loader.spells)
             with TabPane("Monsters", id="monsters"):

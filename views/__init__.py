@@ -3,6 +3,7 @@ from .spells import SpellsView
 from .monsters import MonstersView
 from .items import ItemsView
 from .feats import FeatsView
+from .quick_search import QuickSearchView
 
-__all__ = ["BaseListView", "SpellsView", "MonstersView", "ItemsView", "FeatsView"]
+__all__ = ["BaseListView", "SpellsView", "MonstersView", "ItemsView", "FeatsView", "QuickSearchView"]
 
