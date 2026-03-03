@@ -7,6 +7,7 @@ from textual.widgets import Footer, Header, Input, TabbedContent, TabPane
 
 from .config import load_config, save_config
 from .services import DataLoader, SOURCE_FULL
+from .themes import GRIMOIRE_THEMES
 from .views import SpellsView, MonstersView, ItemsView, FeatsView, RulesView, QuickSearchView, SettingsView
 
 
@@ -31,6 +32,9 @@ class GrimoireApp(App):
 
     def __init__(self, data_dir: Path, installed_sources: Optional[Set[str]] = None) -> None:
         super().__init__()
+        # Register custom themes before compose() so SettingsView sees them in available_themes
+        for theme in GRIMOIRE_THEMES:
+            self.register_theme(theme)
         self.data_dir = data_dir
         self.data_loader = DataLoader(data_dir)
         # When no installed_sources given (e.g. --data-dir mode) treat all known sources as available
