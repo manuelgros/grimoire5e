@@ -4,7 +4,7 @@ from textual import events
 from textual.app import ComposeResult
 from textual.containers import Vertical, Grid
 from textual.message import Message
-from textual.widgets import Button, Checkbox, Static
+from textual.widgets import Button, Checkbox, Select, Static
 
 from ..services import SOURCE_FULL
 
@@ -22,13 +22,35 @@ class SettingsView(Vertical):
             super().__init__()
             self.installed_sources = installed_sources
 
-    def __init__(self, installed_sources: Optional[Set[str]] = None, **kwargs: Any) -> None:
+    class ThemeChanged(Message):
+        def __init__(self, theme: str) -> None:
+            super().__init__()
+            self.theme = theme
+
+    def __init__(
+        self,
+        installed_sources: Optional[Set[str]] = None,
+        current_theme: str = "textual-dark",
+        **kwargs: Any,
+    ) -> None:
         super().__init__(**kwargs)
-        # Only show sources that were actually downloaded
         self._installed_sources: Set[str] = installed_sources if installed_sources is not None else set(SOURCE_FULL.keys())
+        self._current_theme = current_theme
 
     def compose(self) -> ComposeResult:
         yield Static("[bold]Settings[/bold]", classes="title")
+        yield Static("")
+        yield Static("[bold yellow]Appearance[/bold yellow]")
+        theme_options = [
+            (name.replace("-", " ").title(), name)
+            for name in sorted(self.app.available_themes.keys())
+        ]
+        yield Select(
+            options=theme_options,
+            id="theme_select",
+            allow_blank=False,
+            value=self._current_theme,
+        )
         yield Static("")
         yield Static("[bold yellow]Source Books[/bold yellow]")
         yield Static(
@@ -56,8 +78,9 @@ class SettingsView(Vertical):
         new_idx = None
 
         if event.key == "tab":
-            self.query_one("#manage_sources", Button).focus()
-            self.query_one("#manage_sources", Button).scroll_visible()
+            theme_select = self.query_one("#theme_select", Select)
+            theme_select.focus()
+            theme_select.scroll_visible()
             event.stop()
             return
         elif event.key == "shift+tab":
@@ -109,6 +132,10 @@ class SettingsView(Vertical):
             if code not in self._installed_sources:
                 continue
             grid.mount(Checkbox(title, value=True, name=code))
+
+    def on_select_changed(self, event: Select.Changed) -> None:
+        if event.select.id == "theme_select" and isinstance(event.value, str):
+            self.post_message(self.ThemeChanged(event.value))
 
     def on_checkbox_changed(self, event: Checkbox.Changed) -> None:
         active = {cb.name for cb in self.query(Checkbox) if cb.value and cb.name}

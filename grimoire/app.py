@@ -5,6 +5,7 @@ from textual.app import App, ComposeResult
 from textual.binding import Binding
 from textual.widgets import Footer, Header, Input, TabbedContent, TabPane
 
+from .config import load_config, save_config
 from .services import DataLoader, SOURCE_FULL
 from .views import SpellsView, MonstersView, ItemsView, FeatsView, RulesView, QuickSearchView, SettingsView
 
@@ -35,6 +36,7 @@ class GrimoireApp(App):
         # When no installed_sources given (e.g. --data-dir mode) treat all known sources as available
         self._installed_sources: Set[str] = installed_sources if installed_sources is not None else set(SOURCE_FULL.keys())
         self.active_sources: set = set(self._installed_sources)
+        self._saved_theme: str = load_config().get("theme", "textual-dark")
 
     def _filter(self, items: List) -> List:
         """Return only items whose source is currently active."""
@@ -74,8 +76,20 @@ class GrimoireApp(App):
             with TabPane("Rules", id="rules"):
                 yield RulesView(self._filter(self.data_loader.rules))
             with TabPane("Settings", id="settings"):
-                yield SettingsView(installed_sources=self._installed_sources)
+                yield SettingsView(
+                    installed_sources=self._installed_sources,
+                    current_theme=self._saved_theme,
+                )
         yield Footer()
+
+    def on_mount(self) -> None:
+        self.theme = self._saved_theme
+
+    def on_settings_view_theme_changed(self, event: SettingsView.ThemeChanged) -> None:
+        self.theme = event.theme
+        cfg = load_config()
+        cfg["theme"] = event.theme
+        save_config(cfg)
 
     def on_settings_view_sources_changed(self, event: SettingsView.SourcesChanged) -> None:
         """Reload all views whenever the user toggles a source in Settings."""
