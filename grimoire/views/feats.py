@@ -3,7 +3,7 @@ from typing import Any, List, Set
 from textual.containers import Container, Horizontal
 from textual.widgets import Input, Label, ListItem, Select
 
-from ..services import SearchService, SOURCE_SHORT
+from ..services import SearchService, SOURCE_FULL, SOURCE_SHORT
 from ..models import Feat
 from .base import BaseListView
 from .feat_detail import FeatDetailScreen
@@ -18,19 +18,12 @@ CATEGORY_OPTIONS = [
     ("No Category", "none"),
 ]
 
-# All possible feat sources (without the "All" header)
-_FEAT_SOURCE_OPTIONS: List[tuple] = [
-    ("Player's Handbook (2024)", "XPHB"),
-    ("Xanathar's Guide to Everything", "XGE"),
-    ("Tasha's Cauldron of Everything", "TCE"),
-    ("Bigby Presents: Glory of the Giants", "BGG"),
-]
-
-
-def _build_source_opts(active_sources: Set[str]) -> list:
+def _build_source_opts(items: List[Any], active_sources: Set[str]) -> list:
+    present = {f.source for f in items}
     return [("All Sources", None)] + [
-        (label, code) for label, code in _FEAT_SOURCE_OPTIONS
-        if code in active_sources
+        (title, code)
+        for code, title in SOURCE_FULL.items()
+        if code in active_sources and code in present
     ]
 
 
@@ -47,7 +40,7 @@ class FeatsView(BaseListView):
         return Horizontal(
             Select(options=CATEGORY_OPTIONS, id="category_filter", allow_blank=False, value=None),
             Select(
-                options=_build_source_opts(self._active_sources),
+                options=_build_source_opts(self.all_items, self._active_sources),
                 id="source_filter",
                 allow_blank=False,
                 value=None,
@@ -90,7 +83,7 @@ class FeatsView(BaseListView):
         self.all_items = new_items
         self.items = new_items
         self.filtered_items = new_items
-        opts = _build_source_opts(active_sources)
+        opts = _build_source_opts(new_items, active_sources)
         source_select = self.query_one("#source_filter", Select)
         source_select.set_options(opts)
         if source_select.value not in active_sources:

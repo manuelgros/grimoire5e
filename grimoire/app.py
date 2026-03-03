@@ -52,7 +52,10 @@ class GrimoireApp(App):
                     rules=self._filter(self.data_loader.rules),
                 )
             with TabPane("Spells", id="spells"):
-                yield SpellsView(self._filter(self.data_loader.spells))
+                yield SpellsView(
+                    self._filter(self.data_loader.spells),
+                    active_sources=self.active_sources,
+                )
             with TabPane("Monsters", id="monsters"):
                 yield MonstersView(
                     self._filter(self.data_loader.monsters),

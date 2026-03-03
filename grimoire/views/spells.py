@@ -1,16 +1,31 @@
+from typing import Any, List, Set
+
 from textual.containers import Container, Horizontal
 from textual.widgets import Checkbox, Input, Label, ListItem, Select
 
-from ..services import SearchService
+from ..services import SearchService, SOURCE_FULL, SOURCE_SHORT
 from ..models import Spell
 from .base import BaseListView
 from .spell_detail import SpellDetailScreen
+
+
+def _build_source_opts(items: List[Any], active_sources: Set[str]) -> list:
+    present = {s.source for s in items}
+    return [("All Sources", None)] + [
+        (title, code)
+        for code, title in SOURCE_FULL.items()
+        if code in active_sources and code in present
+    ]
 
 
 class SpellsView(BaseListView):
     """Spells list with filters."""
 
     result_noun = "Spells"
+
+    def __init__(self, items: List[Any], active_sources: Set[str] = frozenset(), **kwargs: Any) -> None:
+        super().__init__(items, **kwargs)
+        self._active_sources = set(active_sources)
 
     def render_filters(self) -> Container:
         has_class_data = any(s.classes_list for s in self.all_items)
@@ -36,6 +51,12 @@ class SpellsView(BaseListView):
                     ("Transmutation", "T"),
                 ],
                 id="school_filter",
+                allow_blank=False,
+                value=None,
+            ),
+            Select(
+                options=_build_source_opts(self.all_items, self._active_sources),
+                id="source_filter",
                 allow_blank=False,
                 value=None,
             ),
@@ -82,7 +103,8 @@ class SpellsView(BaseListView):
         if spell.ritual:
             tags.append("R")
         tag_str = f" [{','.join(tags)}]" if tags else ""
-        label = f"{spell.name} • {spell.level_text} {spell.school_full}{tag_str}"
+        source_label = SOURCE_SHORT.get(spell.source, spell.source)
+        label = f"{spell.name} • {spell.level_text} {spell.school_full}{tag_str} • {source_label}"
         return ListItem(Label(label))
 
     def on_select_changed(self, event: Select.Changed) -> None:
@@ -110,6 +132,10 @@ class SpellsView(BaseListView):
         school_select = self.query_one("#school_filter", Select)
         if self._has_school_filter(school_select.value):
             filtered = [s for s in filtered if s.school == school_select.value]
+
+        source_select = self.query_one("#source_filter", Select)
+        if source_select.value is not None and isinstance(source_select.value, str):
+            filtered = [s for s in filtered if s.source == source_select.value]
 
         try:
             class_select = self.query_one("#class_filter", Select)
@@ -143,6 +169,19 @@ class SpellsView(BaseListView):
         search_input = self.query_one("#search", Input)
         self.filtered_items = SearchService.search(self.items, search_input.value)
         self.update_results_list()
+
+    def reload(self, new_items: List[Any], active_sources: Set[str]) -> None:
+        self._active_sources = set(active_sources)
+        self.all_items = new_items
+        self.items = new_items
+        self.filtered_items = new_items
+        opts = _build_source_opts(new_items, active_sources)
+        source_select = self.query_one("#source_filter", Select)
+        source_select.set_options(opts)
+        if source_select.value not in active_sources:
+            source_select.value = None
+        if self._loaded:
+            self.apply_filters()
 
     def show_detail(self, item: Spell) -> None:
         self.app.push_screen(SpellDetailScreen(item))

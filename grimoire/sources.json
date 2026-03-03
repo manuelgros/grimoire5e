@@ -12,62 +12,27 @@
     "bestiary/legendarygroups.json"
   ],
   "sources": [
-    {
-      "id": "XPHB",
-      "name": "Player's Handbook (2024)",
-      "description": "Core rules, spells, and character options for 5e 2024 edition",
-      "default": true,
-      "files": [
-        "spells/spells-xphb.json",
-        "bestiary/bestiary-xphb.json"
-      ]
-    },
-    {
-      "id": "XDMG",
-      "name": "Dungeon Master's Guide (2024)",
-      "description": "DM tools, magic items, and optional rules for 5e 2024 edition",
-      "default": true,
-      "files": [
-        "bestiary/bestiary-xdmg.json"
-      ]
-    },
-    {
-      "id": "XMM",
-      "name": "Monster Manual (2025)",
-      "description": "Comprehensive monster compendium for 5e 2024 edition",
-      "default": true,
-      "files": [
-        "bestiary/bestiary-xmm.json"
-      ]
-    },
-    {
-      "id": "XGE",
-      "name": "Xanathar's Guide to Everything",
-      "description": "Expanded subclasses, spells, and DM tools",
-      "default": false,
-      "files": [
-        "spells/spells-xge.json",
-        "bestiary/bestiary-xge.json"
-      ]
-    },
-    {
-      "id": "TCE",
-      "name": "Tasha's Cauldron of Everything",
-      "description": "Additional subclasses, spells, and optional features",
-      "default": false,
-      "files": [
-        "spells/spells-tce.json",
-        "bestiary/bestiary-tce.json"
-      ]
-    },
-    {
-      "id": "BGG",
-      "name": "Bigby Presents: Glory of the Giants",
-      "description": "Giant-focused monsters, lore, and player options",
-      "default": false,
-      "files": [
-        "bestiary/bestiary-bgg.json"
-      ]
-    }
+    {"id":"XPHB","name":"Player's Handbook (2024)","default":true,"files":["spells/spells-xphb.json","bestiary/bestiary-xphb.json"]},
+    {"id":"XDMG","name":"Dungeon Master's Guide (2024)","default":true,"files":["bestiary/bestiary-xdmg.json"]},
+    {"id":"XMM","name":"Monster Manual (2025)","default":true,"files":["bestiary/bestiary-xmm.json"]},
+    {"id":"PHB","name":"Player's Handbook (2014)","default":false,"files":["spells/spells-phb.json","bestiary/bestiary-phb.json"]},
+    {"id":"DMG","name":"Dungeon Master's Guide (2014)","default":false,"files":["bestiary/bestiary-dmg.json"]},
+    {"id":"MM","name":"Monster Manual (2014)","default":false,"files":["bestiary/bestiary-mm.json"]},
+    {"id":"XGE","name":"Xanathar's Guide to Everything","default":false,"files":["spells/spells-xge.json","bestiary/bestiary-xge.json"]},
+    {"id":"TCE","name":"Tasha's Cauldron of Everything","default":false,"files":["spells/spells-tce.json","bestiary/bestiary-tce.json"]},
+    {"id":"VGM","name":"Volo's Guide to Monsters","default":false,"files":["bestiary/bestiary-vgm.json"]},
+    {"id":"MTF","name":"Mordenkainen's Tome of Foes","default":false,"files":["bestiary/bestiary-mtf.json"]},
+    {"id":"MPMM","name":"Mordenkainen Presents: Monsters of the Multiverse","default":false,"files":["bestiary/bestiary-mpmm.json"]},
+    {"id":"FTD","name":"Fizban's Treasury of Dragons","default":false,"files":["spells/spells-ftd.json","bestiary/bestiary-ftd.json"]},
+    {"id":"BGG","name":"Bigby Presents: Glory of the Giants","default":false,"files":["bestiary/bestiary-bgg.json"]},
+    {"id":"VRGR","name":"Van Richten's Guide to Ravenloft","default":false,"files":["bestiary/bestiary-vrgr.json"]},
+    {"id":"MOT","name":"Mythic Odysseys of Theros","default":false,"files":["bestiary/bestiary-mot.json"]},
+    {"id":"GGR","name":"Guildmasters' Guide to Ravnica","default":false,"files":["spells/spells-ggr.json","bestiary/bestiary-ggr.json"]},
+    {"id":"ERLW","name":"Eberron: Rising from the Last War","default":false,"files":["bestiary/bestiary-erlw.json"]},
+    {"id":"EGW","name":"Explorer's Guide to Wildemount","default":false,"files":["spells/spells-egw.json","bestiary/bestiary-egw.json"]},
+    {"id":"SCC","name":"Strixhaven: A Curriculum of Chaos","default":false,"files":["spells/spells-scc.json","bestiary/bestiary-scc.json"]},
+    {"id":"BAM","name":"Spelljammer: Boo's Astral Menagerie","default":false,"files":["bestiary/bestiary-bam.json"]},
+    {"id":"AI","name":"Acquisitions Incorporated","default":false,"files":["spells/spells-ai.json","bestiary/bestiary-ai.json"]},
+    {"id":"BMT","name":"The Book of Many Things","default":false,"files":["spells/spells-bmt.json","bestiary/bestiary-bmt.json"]}
   ]
 }

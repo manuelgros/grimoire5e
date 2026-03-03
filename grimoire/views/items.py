@@ -3,7 +3,7 @@ from typing import Any, List, Set
 from textual.containers import Container, Horizontal
 from textual.widgets import Checkbox, Input, Label, ListItem, Select
 
-from ..services import SearchService, SOURCE_SHORT
+from ..services import SearchService, SOURCE_FULL, SOURCE_SHORT
 from ..models import Item
 from .base import BaseListView
 from .item_detail import ItemDetailScreen
@@ -35,21 +35,12 @@ RARITY_OPTIONS = [
     ("Artifact", "artifact"),
 ]
 
-# All possible item sources (without the "All" header)
-_ITEM_SOURCE_OPTIONS: List[tuple] = [
-    ("Player's Handbook (2024)", "XPHB"),
-    ("Dungeon Master's Guide (2024)", "XDMG"),
-    ("Monster Manual (2025)", "XMM"),
-    ("Xanathar's Guide to Everything", "XGE"),
-    ("Tasha's Cauldron of Everything", "TCE"),
-    ("Bigby Presents: Glory of the Giants", "BGG"),
-]
-
-
-def _build_source_opts(active_sources: Set[str]) -> list:
+def _build_source_opts(items: List[Any], active_sources: Set[str]) -> list:
+    present = {i.source for i in items}
     return [("All Sources", None)] + [
-        (label, code) for label, code in _ITEM_SOURCE_OPTIONS
-        if code in active_sources
+        (title, code)
+        for code, title in SOURCE_FULL.items()
+        if code in active_sources and code in present
     ]
 
 
@@ -67,7 +58,7 @@ class ItemsView(BaseListView):
             Select(options=TYPE_OPTIONS, id="type_filter", allow_blank=False, value=None),
             Select(options=RARITY_OPTIONS, id="rarity_filter", allow_blank=False, value=None),
             Select(
-                options=_build_source_opts(self._active_sources),
+                options=_build_source_opts(self.all_items, self._active_sources),
                 id="source_filter",
                 allow_blank=False,
                 value=None,
@@ -118,7 +109,7 @@ class ItemsView(BaseListView):
         self.all_items = new_items
         self.items = new_items
         self.filtered_items = new_items
-        opts = _build_source_opts(active_sources)
+        opts = _build_source_opts(new_items, active_sources)
         source_select = self.query_one("#source_filter", Select)
         source_select.set_options(opts)
         if source_select.value not in active_sources:

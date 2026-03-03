@@ -3,9 +3,9 @@ from pathlib import Path
 from typing import List, Optional
 
 from ..models import Spell, Monster, Item, Feat, Rule, cr_to_float
+from .sources import SOURCE_FULL
 
-
-ALLOWED_SOURCES = {"XPHB", "XDMG", "XMM", "XGE", "TCE", "BGG"}
+ALLOWED_SOURCES = set(SOURCE_FULL.keys())
 
 
 class DataLoader:

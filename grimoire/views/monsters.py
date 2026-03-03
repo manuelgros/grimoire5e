@@ -3,7 +3,7 @@ from typing import Any, List, Set
 from textual.containers import Container, Horizontal
 from textual.widgets import Input, Label, ListItem, Select
 
-from ..services import SearchService, SOURCE_SHORT
+from ..services import SearchService, SOURCE_FULL, SOURCE_SHORT
 from ..models import Monster, cr_to_float
 from .base import BaseListView
 from .monster_detail import MonsterDetailScreen
@@ -48,17 +48,12 @@ SIZE_OPTIONS = [
     ("Gargantuan", "G"),
 ]
 
-# All possible monster sources (without the "All" header)
-_MONSTER_SOURCE_OPTIONS: List[tuple] = [
-    ("Monster Manual (2025)", "XMM"),
-    ("Bigby Presents: Glory of the Giants", "BGG"),
-]
-
-
-def _build_source_opts(active_sources: Set[str]) -> list:
+def _build_source_opts(items: List[Any], active_sources: Set[str]) -> list:
+    present = {m.source for m in items}
     return [("All Sources", None)] + [
-        (label, code) for label, code in _MONSTER_SOURCE_OPTIONS
-        if code in active_sources
+        (title, code)
+        for code, title in SOURCE_FULL.items()
+        if code in active_sources and code in present
     ]
 
 
@@ -77,7 +72,7 @@ class MonstersView(BaseListView):
             Select(options=TYPE_OPTIONS, id="type_filter", allow_blank=False, value=None),
             Select(options=SIZE_OPTIONS, id="size_filter", allow_blank=False, value=None),
             Select(
-                options=_build_source_opts(self._active_sources),
+                options=_build_source_opts(self.all_items, self._active_sources),
                 id="source_filter",
                 allow_blank=False,
                 value=None,
@@ -184,7 +179,7 @@ class MonstersView(BaseListView):
         self.all_items = new_items
         self.items = new_items
         self.filtered_items = new_items
-        opts = _build_source_opts(active_sources)
+        opts = _build_source_opts(new_items, active_sources)
         source_select = self.query_one("#source_filter", Select)
         source_select.set_options(opts)
         if source_select.value not in active_sources:
