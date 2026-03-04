@@ -5,13 +5,30 @@ build-backend = "hatchling.build"
 [project]
 name = "grimoire5e"
 version = "0.1.0"
-description = "D&D 5th Edition reference TUI"
+description = "D&D 5th Edition reference TUI — spells, monsters, items, feats, and rules in the terminal"
+readme = "README.md"
+license = { text = "MIT" }
+authors = [{ name = "Manuel Gros" }]
 requires-python = ">=3.11"
 dependencies = [
     "textual>=0.80.0",
     "httpx>=0.27.0",
     "platformdirs>=4.0.0",
 ]
+classifiers = [
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Environment :: Console",
+    "Intended Audience :: End Users/Desktop",
+    "Topic :: Games/Entertainment :: Role-Playing",
+]
+
+[project.urls]
+Homepage = "https://github.com/manuelgros/grimoire5e"
+Repository = "https://github.com/manuelgros/grimoire5e"
 
 [project.scripts]
 grimoire = "grimoire.cli:main"
