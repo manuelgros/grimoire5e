@@ -73,6 +73,8 @@ Data is downloaded from the public [5etools mirror](https://github.com/5etools-m
 | Linux    | `~/.local/share/grimoire/` |
 | Windows  | `%APPDATA%\grimoire5e\grimoire\` |
 
+The selection can be later edited via the Settings tab
+
 ## Usage
 
 ```
