@@ -16,6 +16,7 @@ TYPE_OPTIONS = [
     ("Shield", "shield"),
     ("Wondrous", "wondrous"),
     ("Potion", "potion"),
+    ("Poison", "poison"),
     ("Scroll", "scroll"),
     ("Rod", "rod"),
     ("Ring", "ring"),

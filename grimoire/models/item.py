@@ -30,6 +30,7 @@ _CATEGORY_LABELS: Dict[str, str] = {
     "focus": "Spellcasting Focus",
     "instrument": "Instrument",
     "gear": "Adventuring Gear",
+    "poison": "Poison",
     "other": "Other",
 }
 
@@ -47,6 +48,8 @@ class Item(BaseModel):
     weapon: Optional[bool] = False
     armor: Optional[bool] = False
     wondrous: Optional[bool] = False
+    poison: Optional[bool] = False
+    poisonTypes: Optional[List[str]] = None
     baseItem: Optional[str] = None
     requires_str: Optional[str] = None  # Human-readable "applies to" for magic variants
 
@@ -78,6 +81,8 @@ class Item(BaseModel):
 
     @property
     def category(self) -> str:
+        if self.poison:
+            return "poison"
         base = (self.type or "").split("|")[0]
         cat = _CATEGORY_MAP.get(base)
         if cat:

@@ -197,6 +197,8 @@ class DataLoader:
                             weapon=item_data.get("weapon", False),
                             armor=item_data.get("armor", False),
                             wondrous=item_data.get("wondrous", False),
+                            poison=item_data.get("poison", False),
+                            poisonTypes=item_data.get("poisonTypes"),
                             baseItem=item_data.get("baseItem"),
                         )
                     )

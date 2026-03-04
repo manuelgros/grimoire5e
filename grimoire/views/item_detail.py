@@ -56,6 +56,9 @@ class ItemDetailScreen(Screen):
             if it.requires_attunement:
                 t = Text(it.attunement_display, style="italic")
                 yield Static(t)
+            if it.poisonTypes:
+                delivery = ", ".join(t.title() for t in it.poisonTypes)
+                yield self._stat("Delivery:", delivery)
             if it.weight is not None:
                 yield self._stat("Weight:", f"{it.weight} lb.")
             if it.value is not None:
