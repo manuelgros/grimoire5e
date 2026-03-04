@@ -10,8 +10,7 @@ from textual.widgets import Button, Static
 
 from ..models import Item
 from ..services import SOURCE_FULL
-
-_LABEL_COLOR = "#5f87ff"
+from ..themes import THEME_LABEL_COLORS, _DEFAULT_LABEL_COLOR
 
 _RARITY_COLORS = {
     "Uncommon":  "#55cc55",
@@ -29,15 +28,18 @@ class ItemDetailScreen(Screen):
         super().__init__()
         self.item = item
 
+    def _label_color(self) -> str:
+        return THEME_LABEL_COLORS.get(self.app.theme, _DEFAULT_LABEL_COLOR)
+
     def _stat(self, label: str, value: str) -> Static:
         t = Text()
-        t.append(label, style=f"bold {_LABEL_COLOR}")
+        t.append(label, style=f"bold {self._label_color()}")
         t.append(f" {value}")
         return Static(t)
 
     def _rarity_stat(self, rarity: str) -> Static:
         t = Text()
-        t.append("Rarity:", style=f"bold {_LABEL_COLOR}")
+        t.append("Rarity:", style=f"bold {self._label_color()}")
         t.append(" ")
         color = _RARITY_COLORS.get(rarity)
         t.append(rarity, style=color if color else "")

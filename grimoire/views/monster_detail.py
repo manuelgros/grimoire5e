@@ -10,8 +10,7 @@ from textual.widgets import Button, Static
 
 from ..models import Monster
 from ..services import SOURCE_FULL
-
-_STAT_COLOR = "#5f87ff"
+from ..themes import THEME_LABEL_COLORS, THEME_SECTION_COLORS, _DEFAULT_LABEL_COLOR, _DEFAULT_SECTION_COLOR
 
 _ATK_MAP = {
     "m":     "Melee Attack",
@@ -48,9 +47,15 @@ class MonsterDetailScreen(Screen):
         super().__init__()
         self.monster = monster
 
+    def _label_color(self) -> str:
+        return THEME_LABEL_COLORS.get(self.app.theme, _DEFAULT_LABEL_COLOR)
+
+    def _section_color(self) -> str:
+        return THEME_SECTION_COLORS.get(self.app.theme, _DEFAULT_SECTION_COLOR)
+
     def _stat(self, label: str, value: str) -> Static:
         t = Text()
-        t.append(label, style=f"bold {_STAT_COLOR}")
+        t.append(label, style=f"bold {self._label_color()}")
         t.append(f" {value}")
         return Static(t)
 
@@ -89,8 +94,9 @@ class MonsterDetailScreen(Screen):
                 yield self._stat("Challenge", m.cr_display)
                 yield Static("")
 
+                sc = self._section_color()
                 for section_label, items in self._build_sections(m):
-                    yield Static(f"[bold yellow]{section_label}[/bold yellow]")
+                    yield Static(f"[bold {sc}]{section_label}[/bold {sc}]")
                     for text in items:
                         yield Static(text)
                         yield Static("")
@@ -102,7 +108,7 @@ class MonsterDetailScreen(Screen):
                 ]:
                     entries = grp.get(grp_key)
                     if entries:
-                        yield Static(f"[bold yellow]{grp_label}[/bold yellow]")
+                        yield Static(f"[bold {sc}]{grp_label}[/bold {sc}]")
                         yield Static(self._format_entries(entries))
                         yield Static("")
 

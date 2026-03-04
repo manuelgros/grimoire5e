@@ -67,3 +67,22 @@ parchment = Theme(
 )
 
 GRIMOIRE_THEMES: list = [classic_dnd, five_etools, arcane, parchment]
+
+# Per-theme label colors used in detail views (stat/field labels like "Casting Time:")
+THEME_LABEL_COLORS: dict = {
+    "classic-dnd": "#FFB62A",  # D&D Beyond gold — warm, legendary
+    "5e-tools":    "#5B8FC9",  # deep steel blue (theme primary)
+    "arcane":      "#E8A0F0",  # soft lavender (theme accent)
+    "parchment":   "#9B1C1C",  # deep red ink — matches the sourcebook accent
+}
+
+# Per-theme section header colors (e.g. "Actions", "Traits" in monster stat blocks)
+THEME_SECTION_COLORS: dict = {
+    "classic-dnd": "#C5000E",  # D&D Beyond crimson — chapter/section headings
+    "5e-tools":    "#5B8FC9",  # primary steel blue
+    "arcane":      "#9B59B6",  # amethyst — distinct from the lighter label color
+    "parchment":   "#5C2D0A",  # dark oak brown — ink on parchment
+}
+
+_DEFAULT_LABEL_COLOR = "#5f87ff"    # original blue for all Textual built-in themes
+_DEFAULT_SECTION_COLOR = "yellow"   # original yellow for all Textual built-in themes

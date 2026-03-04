@@ -10,8 +10,7 @@ from textual.widgets import Button, Static
 
 from ..models import Feat
 from ..services import SOURCE_FULL
-
-_LABEL_COLOR = "#5f87ff"
+from ..themes import THEME_LABEL_COLORS, _DEFAULT_LABEL_COLOR
 
 CATEGORY_LABELS = {
     "G": "General",
@@ -35,9 +34,12 @@ class FeatDetailScreen(Screen):
         super().__init__()
         self.feat = feat
 
+    def _label_color(self) -> str:
+        return THEME_LABEL_COLORS.get(self.app.theme, _DEFAULT_LABEL_COLOR)
+
     def _stat(self, label: str, value: str) -> Static:
         t = Text()
-        t.append(label, style=f"bold {_LABEL_COLOR}")
+        t.append(label, style=f"bold {self._label_color()}")
         t.append(f" {value}")
         return Static(t)
 
