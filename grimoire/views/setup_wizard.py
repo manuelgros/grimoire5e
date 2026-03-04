@@ -21,6 +21,10 @@ class SetupWizardApp(App):
 
     def __init__(self, manage_only: bool = False) -> None:
         super().__init__()
+        from ..themes import GRIMOIRE_THEMES
+        for theme in GRIMOIRE_THEMES:
+            self.register_theme(theme)
+        self.theme = "5e-tools"
         self._manage_only = manage_only
         self._downloading = False
 

@@ -246,6 +246,7 @@ class DataLoader:
                             reqAttune=inh.get("reqAttune"),
                             wondrous=inh.get("wondrous", False),
                             requires_str=self._requires_to_str(requires),
+                            inherits=inh,
                         )
                     )
 

@@ -52,6 +52,7 @@ class Item(BaseModel):
     poisonTypes: Optional[List[str]] = None
     baseItem: Optional[str] = None
     requires_str: Optional[str] = None  # Human-readable "applies to" for magic variants
+    inherits: Dict[str, Any] = field(default_factory=dict)
 
     @property
     def rarity_display(self) -> str:

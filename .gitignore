@@ -16,6 +16,9 @@ venv/
 .DS_Store
 *.swp
 
+# Local notes
+CHANGELOG_DRAFT.md
+
 # Legacy flat-layout (superseded by grimoire/ package)
 /app.py
 /main.py

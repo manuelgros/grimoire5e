@@ -80,6 +80,13 @@ class ItemDetailScreen(Screen):
         return f"{value} cp"
 
     def _strip_tags(self, text: str) -> str:
+        def _replace_inherits(m: re.Match) -> str:
+            key = m.group(1)
+            if "/" in key:
+                key = key.split("/")[0]
+            return str(self.item.inherits.get(key, m.group(0)))
+
+        text = re.sub(r"\{=([^}]+)\}", _replace_inherits, text)
         text = re.sub(r"\{@action ([^|}]+)(?:\|[^}]*)?\}", r"\1", text)
         text = re.sub(r"\{@condition ([^|}]+)(?:\|[^}]*)?\}", r"\1", text)
         text = re.sub(r"\{@item ([^|}]+)(?:\|[^}]*)?\}", r"\1", text)

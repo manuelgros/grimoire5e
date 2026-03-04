@@ -40,7 +40,7 @@ class GrimoireApp(App):
         # When no installed_sources given (e.g. --data-dir mode) treat all known sources as available
         self._installed_sources: Set[str] = installed_sources if installed_sources is not None else set(SOURCE_FULL.keys())
         self.active_sources: set = set(self._installed_sources)
-        self._saved_theme: str = load_config().get("theme", "textual-dark")
+        self._saved_theme: str = load_config().get("theme", "5e-tools")
 
     def _filter(self, items: List) -> List:
         """Return only items whose source is currently active."""
