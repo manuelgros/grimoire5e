@@ -11,3 +11,17 @@ dist/
 build/
 .venv/
 venv/
+
+# Editor / OS
+.DS_Store
+*.swp
+
+# Legacy flat-layout (superseded by grimoire/ package)
+/app.py
+/main.py
+/styles.css
+/requirements.txt
+/models/
+/services/
+/views/
+/test_data_loader.py
