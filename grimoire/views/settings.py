@@ -79,6 +79,15 @@ class SettingsView(Vertical):
     def on_key(self, event: events.Key) -> None:
         checkboxes = list(self.query(Checkbox))
         focused = self.app.focused
+
+        theme_select = self.query_one("#theme_select", GroupedSelect)
+        if focused is theme_select:
+            if event.key == "shift+tab":
+                self.app.query_one("Tabs").focus()
+                event.stop()
+            # Tab from theme_select → let Textual default to first checkbox
+            return
+
         if focused not in checkboxes:
             return
 
@@ -87,13 +96,14 @@ class SettingsView(Vertical):
         new_idx = None
 
         if event.key == "tab":
-            theme_select = self.query_one("#theme_select", GroupedSelect)
-            theme_select.focus()
-            theme_select.scroll_visible()
+            btn = self.query_one("#manage_sources", Button)
+            btn.focus()
+            btn.scroll_visible()
             event.stop()
             return
         elif event.key == "shift+tab":
-            self.app.query_one("Tabs").focus()
+            theme_select.focus()
+            theme_select.scroll_visible()
             event.stop()
             return
 

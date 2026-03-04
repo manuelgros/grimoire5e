@@ -63,8 +63,8 @@ class ManageSourcesScreen(Screen):
             yield Static("")
             any_selected = any(src["id"] in self._installed_sources for src in self._manager.sources)
             with Horizontal(id="buttons"):
-                yield Button("Cancel", id="cancel", variant="error")
                 yield Button("Apply Changes", id="apply", variant="primary", disabled=not any_selected)
+                yield Button("Cancel", id="cancel", variant="error")
 
         yield Footer()
 
@@ -76,14 +76,14 @@ class ManageSourcesScreen(Screen):
         apply_btn = self.query_one("#apply", Button)
 
         # Left/Right navigate between the two action buttons
-        if focused is cancel_btn:
+        if focused is apply_btn:
             if event.key == "right":
-                apply_btn.focus()
+                cancel_btn.focus()
                 event.stop()
             return
-        if focused is apply_btn:
+        if focused is cancel_btn:
             if event.key == "left":
-                cancel_btn.focus()
+                apply_btn.focus()
                 event.stop()
             return
 
@@ -109,8 +109,8 @@ class ManageSourcesScreen(Screen):
             if idx % self._COLS > 0:
                 new_idx = idx - 1
         elif event.key == "tab":
-            cancel_btn.focus()
-            cancel_btn.scroll_visible()
+            apply_btn.focus()
+            apply_btn.scroll_visible()
             event.stop()
             return
 
