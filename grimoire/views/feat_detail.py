@@ -128,6 +128,8 @@ class FeatDetailScreen(Screen):
         return text.strip()
 
     def _format_entries(self, entries: List[Any]) -> str:
+        lc = self._label_color()
+
         def render(entry: Any) -> str:
             if isinstance(entry, str):
                 return self._strip_tags(entry)
@@ -142,11 +144,11 @@ class FeatDetailScreen(Screen):
                     else:
                         raw = entry.get("entry", "")
                         body = self._strip_tags(raw) if isinstance(raw, str) else render(raw)
-                    return f"[bold yellow]{name}.[/bold yellow] {body}" if name else body
+                    return f"[bold {lc}]{name}.[/bold {lc}] {body}" if name else body
                 if e_type in {"entries", "section"}:
                     header = entry.get("name")
                     body = "\n".join(render(e) for e in entry.get("entries", []))
-                    return f"[bold yellow]{header}[/bold yellow]\n{body}" if header else body
+                    return f"[bold {lc}]{header}[/bold {lc}]\n{body}" if header else body
                 if "entries" in entry:
                     return "\n".join(render(e) for e in entry["entries"])
                 if "entry" in entry:

@@ -9,6 +9,7 @@ from textual.widgets import Button, Input, Label, ListItem, Select, Static
 
 from ..services import SearchService, SOURCE_FULL
 from ..models import Rule
+from ..themes import THEME_LABEL_COLORS, _DEFAULT_LABEL_COLOR
 from .base import BaseListView
 
 
@@ -19,11 +20,15 @@ class RuleDetailScreen(Screen):
         super().__init__()
         self.rule = rule
 
+    def _label_color(self) -> str:
+        return THEME_LABEL_COLORS.get(self.app.theme, _DEFAULT_LABEL_COLOR)
+
     def compose(self) -> ComposeResult:
         r = self.rule
         with Vertical():
             yield Static(f"[bold]{r.name}[/bold]", classes="title")
-            yield Static(f"[bold yellow]{r.type_display}[/bold yellow]")
+            lc = self._label_color()
+            yield Static(f"[bold {lc}]{r.type_display}[/bold {lc}]")
             yield Static("")
             with ScrollableContainer():
                 if r.entries:
@@ -61,7 +66,8 @@ class RuleDetailScreen(Screen):
                 elif e_type in {"entries", "section"}:
                     header = entry.get("name")
                     if header:
-                        widgets.append(Static(f"[bold yellow]{header}[/bold yellow]"))
+                        lc = self._label_color()
+                        widgets.append(Static(f"[bold {lc}]{header}[/bold {lc}]"))
                     for sub in self._render_entries(entry.get("entries", [])):
                         widgets.append(sub)
                 else:
@@ -83,7 +89,8 @@ class RuleDetailScreen(Screen):
             if e_type in {"entries", "section"}:
                 header = entry.get("name")
                 body = "\n".join(self._inline_render(e) for e in entry.get("entries", []))
-                return f"[bold yellow]{header}[/bold yellow]\n{body}" if header else body
+                lc = self._label_color()
+                return f"[bold {lc}]{header}[/bold {lc}]\n{body}" if header else body
             if "entries" in entry:
                 return "\n".join(self._inline_render(e) for e in entry["entries"])
             return str(entry)
