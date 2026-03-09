@@ -1,6 +1,7 @@
 5etools-v2.25.0/
 data/
 MCDM*
+Griffin*
 
 # Python
 __pycache__/
@@ -18,6 +19,7 @@ venv/
 
 # Local notes
 CHANGELOG_DRAFT.md
+UPLOAD_FEATURE_PROMPT.md
 
 # Legacy flat-layout (superseded by grimoire/ package)
 /app.py
