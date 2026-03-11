@@ -122,6 +122,11 @@ class UploadSourceScreen(Screen):
     def _show_phase(self, phase_id: str) -> None:
         for pid in ("phase_input", "phase_loading", "phase_summary", "phase_result"):
             self.query_one(f"#{pid}").display = pid == phase_id
+        # Auto-focus the primary button when entering summary or result phases
+        if phase_id == "phase_summary":
+            self.query_one("#confirm", Button).focus()
+        elif phase_id == "phase_result":
+            self.query_one("#close", Button).focus()
 
     def _set_error(self, msg: str) -> None:
         self.query_one("#error_msg", Static).update(f"[bold red]{msg}[/bold red]")

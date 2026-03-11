@@ -2,6 +2,7 @@
 data/
 MCDM*
 Griffin*
+test_files/
 
 # Python
 __pycache__/
