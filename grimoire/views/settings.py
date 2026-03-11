@@ -80,7 +80,7 @@ class SettingsView(Vertical):
         yield Static("")
         with Horizontal(id="source_buttons"):
             yield Button("Manage Sources", id="manage_sources", variant="primary")
-            yield Button("Upload Source", id="upload_source", variant="default")
+            yield Button("Upload Source", id="upload_source", variant="success")
             custom = get_custom_sources()
             if custom:
                 yield Button("Remove Custom", id="remove_custom", variant="warning")

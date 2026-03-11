@@ -7,14 +7,14 @@ from textual.theme import Theme
 classic_dnd = Theme(
     name="classic-dnd",
     dark=True,
-    primary="#C5000E",       # D&D Beyond signature red
+    primary="#C5000E",       # D&D Beyond signature red — primary buttons
     secondary="#8B0000",     # deeper blood red
     accent="#FFB62A",        # D&D Beyond gold (legendary)
     background="#0F1215",    # very dark warm-cool black
     surface="#1A2028",       # dark slate surface
-    panel="#242F3A",         # slightly lighter panel
-    warning="#ED6C02",       # orange warning
-    error="#F44336",         # bright red error
+    panel="#242F3A",         # slightly lighter panel — default buttons
+    warning="#ED6C02",       # orange warning — warning buttons
+    error="#8B1A00",         # dark burnt red — error buttons (distinct from primary)
     success="#4CAF50",       # green success
 )
 
@@ -23,14 +23,14 @@ classic_dnd = Theme(
 five_etools = Theme(
     name="5e-tools",
     dark=True,
-    primary="#5B8FC9",       # steel blue (link/nav colour)
+    primary="#5B8FC9",       # steel blue — primary buttons
     secondary="#3A6B99",     # deeper blue
     accent="#7EB3E8",        # light blue highlight
     background="#0A0A0C",    # near-black with faint blue tint
     surface="#131318",       # dark surface
-    panel="#1C1C24",         # slightly lighter panel
-    warning="#D4A017",       # amber
-    error="#C04040",         # muted red
+    panel="#1C1C24",         # slightly lighter panel — default buttons
+    warning="#D4A017",       # amber — warning buttons
+    error="#8B2020",         # dark muted red — error buttons
     success="#3D9970",       # muted green
 )
 
@@ -39,14 +39,14 @@ five_etools = Theme(
 arcane = Theme(
     name="arcane",
     dark=True,
-    primary="#9B59B6",       # amethyst purple
+    primary="#9B59B6",       # amethyst purple — primary buttons
     secondary="#6C3483",     # deep violet
     accent="#E8A0F0",        # soft lavender highlight
     background="#0B0813",    # darkest purple-black
     surface="#130E1E",       # dark purple surface
-    panel="#1A1228",         # slightly lighter panel
-    warning="#E6A817",       # golden amber
-    error="#CF3A3A",         # red
+    panel="#1A1228",         # slightly lighter panel — default buttons
+    warning="#E6A817",       # golden amber — warning buttons
+    error="#7A1A3A",         # dark crimson-rose — error buttons
     success="#27AE60",       # emerald green
 )
 
@@ -55,14 +55,14 @@ arcane = Theme(
 parchment = Theme(
     name="parchment",
     dark=False,
-    primary="#5C2D0A",       # dark oak brown (headings/primary)
+    primary="#7A3500",       # dark oak brown — primary buttons (readable on parchment)
     secondary="#8B4513",     # saddle brown
     accent="#9B1C1C",        # deep red ink accent
     background="#F2E4C4",    # aged parchment
     surface="#E8D5A3",       # slightly darker parchment
-    panel="#D4BA7A",         # tan panel
-    warning="#B8860B",       # dark goldenrod
-    error="#8B0000",         # dark red
+    panel="#C4A87A",         # warm tan — default buttons
+    warning="#7A5A00",       # dark goldenrod — warning buttons
+    error="#8B0000",         # dark red — error buttons
     success="#2D6A4F",       # dark forest green
 )
 
@@ -71,14 +71,14 @@ parchment = Theme(
 gelatinous_cube = Theme(
     name="gelatinous-cube",
     dark=True,
-    primary="#5fa777",       # the cube itself — muted teal-green
-    secondary="#3d7a57",     # deeper dungeon green
+    primary="#3d7a57",       # deeper dungeon green — primary buttons
+    secondary="#5fa777",     # the cube itself — muted teal-green
     accent="#5fa777",        # frame/border matches the cube
     background="#08100b",    # near-black dungeon floor with green undertone
     surface="#0e1a13",       # dark slimy surface
-    panel="#152218",         # slightly lighter — the cube's walls
-    warning="#b8a030",       # murky gold — treasure glimpsed inside
-    error="#c04848",         # muted red — something dissolved
+    panel="#152218",         # slightly lighter — the cube's walls, default buttons
+    warning="#b8a030",       # murky gold — warning buttons
+    error="#5A2020",         # muted dissolved-red — error buttons
     success="#7dd4a0",       # acid-bright mint — successful digestion
 )
 

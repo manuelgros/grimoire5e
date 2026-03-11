@@ -78,3 +78,35 @@ SettingsView {
 #buttons Button {
     margin-right: 2;
 }
+
+/* ── Themed buttons ──────────────────────────────────────────────────────── */
+
+Button.-primary {
+    background: $primary;
+    border: tall $primary;
+    color: $text;
+}
+
+Button.-default {
+    background: $panel;
+    border: tall $panel;
+    color: $text-muted;
+}
+
+Button.-error {
+    background: $error;
+    border: tall $error;
+    color: $text;
+}
+
+Button.-warning {
+    background: $warning;
+    border: tall $warning;
+    color: $text;
+}
+
+Button.-success {
+    background: $success;
+    border: tall $success;
+    color: $text;
+}
