@@ -156,7 +156,10 @@ class MonstersView(BaseListView):
                 types = [c.lower() for c in inner.get("choose", [])]
             else:
                 types = []
-            tags = [tag.lower() for tag in t.get("tags", [])]
+            tags = [
+                (tag if isinstance(tag, str) else tag.get("tag", "")).lower()
+                for tag in t.get("tags", [])
+            ]
             return types + tags
         return []
 
