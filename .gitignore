@@ -3,6 +3,7 @@ data/
 MCDM*
 Griffin*
 test_files/
+5etools/
 
 # Python
 __pycache__/

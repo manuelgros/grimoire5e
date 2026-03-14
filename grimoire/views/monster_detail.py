@@ -6,7 +6,7 @@ from textual import events
 from textual.app import ComposeResult
 from textual.containers import ScrollableContainer, Vertical
 from textual.screen import Screen
-from textual.widgets import Button, Static
+from textual.widgets import Button, Static, TabbedContent, TabPane, Tabs
 
 from ..models import Monster
 from ..services import SOURCE_FULL
@@ -63,58 +63,96 @@ class MonsterDetailScreen(Screen):
         m = self.monster
         with Vertical():
             yield Static(f"[bold]{m.name}[/bold]", classes="title")
-            yield Static(
-                f"{m.size_display} {m.type_display}, {self._format_alignment(m.alignment)}"
-            )
-            yield Static("")
-            yield self._stat("Armor Class", self._format_ac(m.ac))
-            yield self._stat("Hit Points", self._format_hp(m.hp))
-            yield self._stat("Speed", self._format_speed(m.speed))
-            yield Static("")
-            yield Static(self._format_ability_scores(m))
-            yield Static("")
-
-            with ScrollableContainer():
-                if m.save:
-                    yield self._stat("Saving Throws", self._format_kv(m.save))
-                if m.skill:
-                    yield self._stat("Skills", self._format_kv(m.skill))
-                if m.vulnerable:
-                    yield self._stat("Damage Vulnerabilities", self._format_resist_immune(m.vulnerable))
-                if m.resist:
-                    yield self._stat("Damage Resistances", self._format_resist_immune(m.resist))
-                if m.immune:
-                    yield self._stat("Damage Immunities", self._format_resist_immune(m.immune))
-                if m.conditionImmune:
-                    yield self._stat("Condition Immunities", self._format_resist_immune(m.conditionImmune))
-                if m.senses:
-                    yield self._stat("Senses", ", ".join(m.senses))
-                if m.languages:
-                    yield self._stat("Languages", ", ".join(m.languages))
-                yield self._stat("Challenge", m.cr_display)
-                yield Static("")
-
-                sc = self._section_color()
-                for section_label, items in self._build_sections(m):
-                    yield Static(f"[bold {sc}]{section_label}[/bold {sc}]")
-                    for text in items:
-                        yield Static(text)
+            with TabbedContent(initial="stat-block"):
+                with TabPane("Stat Block", id="stat-block"):
+                    with ScrollableContainer():
+                        yield Static(
+                            f"{m.size_display} {m.type_display}, {self._format_alignment(m.alignment)}"
+                        )
+                        yield Static("")
+                        yield self._stat("Armor Class", self._format_ac(m.ac))
+                        yield self._stat("Hit Points", self._format_hp(m.hp))
+                        yield self._stat("Speed", self._format_speed(m.speed))
+                        yield Static("")
+                        yield Static(self._format_ability_scores(m))
                         yield Static("")
 
-                grp = m.legendary_group_data or {}
-                for grp_key, grp_label in [
-                    ("lairActions",    "Lair Actions"),
-                    ("regionalEffects", "Regional Effects"),
-                ]:
-                    entries = grp.get(grp_key)
-                    if entries:
-                        yield Static(f"[bold {sc}]{grp_label}[/bold {sc}]")
-                        yield Static(self._format_entries(entries))
+                        if m.save:
+                            yield self._stat("Saving Throws", self._format_kv(m.save))
+                        if m.skill:
+                            yield self._stat("Skills", self._format_kv(m.skill))
+                        if m.vulnerable:
+                            yield self._stat("Damage Vulnerabilities", self._format_resist_immune(m.vulnerable))
+                        if m.resist:
+                            yield self._stat("Damage Resistances", self._format_resist_immune(m.resist))
+                        if m.immune:
+                            yield self._stat("Damage Immunities", self._format_resist_immune(m.immune))
+                        if m.conditionImmune:
+                            yield self._stat("Condition Immunities", self._format_resist_immune(m.conditionImmune))
+                        if m.senses:
+                            yield self._stat("Senses", ", ".join(m.senses))
+                        if m.languages:
+                            yield self._stat("Languages", ", ".join(m.languages))
+                        yield self._stat("Challenge", m.cr_display)
                         yield Static("")
 
-                yield Static(f"[dim]Source: {SOURCE_FULL.get(m.source, m.source)}[/dim]")
+                        sc = self._section_color()
+                        for section_label, items in self._build_sections(m):
+                            yield Static(f"[bold {sc}]{section_label}[/bold {sc}]")
+                            for text in items:
+                                yield Static(text)
+                                yield Static("")
+
+                        grp = m.legendary_group_data or {}
+                        for grp_key, grp_label in [
+                            ("lairActions",    "Lair Actions"),
+                            ("regionalEffects", "Regional Effects"),
+                        ]:
+                            entries = grp.get(grp_key)
+                            if entries:
+                                yield Static(f"[bold {sc}]{grp_label}[/bold {sc}]")
+                                yield Static(self._format_entries(entries))
+                                yield Static("")
+
+                        yield Static(f"[dim]Source: {SOURCE_FULL.get(m.source, m.source)}[/dim]")
+
+                with TabPane("Info", id="info"):
+                    with ScrollableContainer():
+                        if m.fluff:
+                            yield Static(self._format_entries(m.fluff))
+                        else:
+                            yield Static("[dim]No description available for this monster.[/dim]")
 
             yield Button("Back", id="back")
+
+    def on_mount(self) -> None:
+        self.query_one(Tabs).focus()
+
+    def on_key(self, event: events.Key) -> None:
+        focused = self.app.focused
+
+        if event.key in ("up", "down") and isinstance(focused, Tabs):
+            active_id = self.query_one(TabbedContent).active
+            try:
+                scroller = self.query_one(f"#stat-block ScrollableContainer" if active_id == "stat-block" else f"#info ScrollableContainer", ScrollableContainer)
+                if event.key == "up":
+                    scroller.scroll_up()
+                else:
+                    scroller.scroll_down()
+            except Exception:
+                pass
+            event.stop()
+
+        elif event.key == "tab" and isinstance(focused, Tabs):
+            self.query_one("#back", Button).focus()
+            event.stop()
+
+        elif event.key == "escape":
+            self.app.pop_screen()
+
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        if event.button.id == "back":
+            self.app.pop_screen()
 
     def _build_sections(
         self, m: Monster
@@ -166,7 +204,12 @@ class MonsterDetailScreen(Screen):
         text = re.sub(r"\{@hit ([^}]+)\}", r"+\1", text)
         text = re.sub(r"\{@dc ([^}]+)\}", r"DC \1", text)
         text = re.sub(r"\{@(?:damage|dice) ([^}]+)\}", r"\1", text)
+        text = re.sub(r"\{@i ([^}]+)\}", r"\1", text)
         text = re.sub(r"\{@\w+ ([^|}]+)(?:\|[^}]*)?\}", r"\1", text)
+        # Clean up artifacts left by stripped tags (bare commas, extra spaces)
+        text = re.sub(r",\s*,", ",", text)
+        text = re.sub(r"^\s*,\s*|\s*,\s*$", "", text)
+        text = re.sub(r"\s{2,}", " ", text)
         return text.strip()
 
     def _format_alignment(self, alignment: List[str]) -> str:
@@ -287,7 +330,27 @@ class MonsterDetailScreen(Screen):
             if isinstance(entry, dict):
                 e_type = entry.get("type")
                 if e_type == "list":
-                    return "\n".join(f"- {render(e)}" for e in entry.get("items", []))
+                    style = entry.get("style", "")
+                    items_rendered = []
+                    for e in entry.get("items", []):
+                        if isinstance(e, dict) and e.get("type") == "item":
+                            name = entry.get("name") or e.get("name", "")
+                            if "entry" in e:
+                                body = self._strip_tags(e["entry"]) if isinstance(e["entry"], str) else render(e["entry"])
+                            elif "entries" in e:
+                                body = "\n".join(render(x) for x in e["entries"])
+                            else:
+                                body = ""
+                            if name:
+                                items_rendered.append(f"[bold]{self._strip_tags(name)}[/bold] {body}".strip())
+                            else:
+                                items_rendered.append(body)
+                        else:
+                            if "list-hang" in style:
+                                items_rendered.append(render(e))
+                            else:
+                                items_rendered.append(f"- {render(e)}")
+                    return "\n".join(items_rendered)
                 if e_type == "item":
                     name = entry.get("name", "")
                     if "entries" in entry:
@@ -298,8 +361,10 @@ class MonsterDetailScreen(Screen):
                     return f"[bold]{name}.[/bold] {body}" if name else body
                 if e_type in {"entries", "section"}:
                     header = entry.get("name")
-                    body = "\n".join(render(e) for e in entry.get("entries", []))
-                    return f"[bold]{header}[/bold]\n{body}" if header else body
+                    body = "\n\n".join(render(e) for e in entry.get("entries", []))
+                    if header:
+                        return f"[bold]{self._strip_tags(header)}[/bold]\n\n{body}"
+                    return body
                 if "entries" in entry:
                     return "\n".join(render(e) for e in entry["entries"])
                 if "entry" in entry:
@@ -311,11 +376,3 @@ class MonsterDetailScreen(Screen):
             return str(entry)
 
         return "\n\n".join(render(e) for e in entries)
-
-    def on_key(self, event: events.Key) -> None:
-        if event.key == "escape":
-            self.app.pop_screen()
-
-    def on_button_pressed(self, event: Button.Pressed) -> None:
-        if event.button.id == "back":
-            self.app.pop_screen()

@@ -50,7 +50,6 @@ SIZE_OPTIONS = [
 
 ENVIRONMENT_OPTIONS = [
     ("All Environments", None),
-    ("Any", "any"),
     ("Arctic", "arctic"),
     ("Coastal", "coastal"),
     ("Desert", "desert"),

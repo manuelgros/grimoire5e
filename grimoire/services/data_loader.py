@@ -89,6 +89,38 @@ class DataLoader:
 
         return sorted(spells, key=lambda s: (s.level, s.name))
 
+    def _load_monster_fluff(self) -> dict:
+        """Return (name, source) → resolved entries list from fluff-bestiary-*.json files."""
+        bestiary_dir = self.data_dir / "bestiary"
+        if not bestiary_dir.exists():
+            return {}
+
+        # First pass: collect all raw fluff entries keyed by (name, source)
+        raw: dict = {}
+        for file_path in sorted(bestiary_dir.glob("fluff-bestiary-*.json")):
+            with open(file_path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            for entry in data.get("monsterFluff", []):
+                raw[(entry["name"], entry["source"])] = entry
+
+        def resolve(entry: dict) -> list:
+            if "entries" in entry:
+                return list(entry["entries"])
+            if "_copy" in entry:
+                copy = entry["_copy"]
+                base = raw.get((copy["name"], copy["source"]), {})
+                base_entries = resolve(base) if base else []
+                mod = copy.get("_mod", {}).get("entries", {})
+                if mod.get("mode") == "prependArr":
+                    prepend = mod.get("items", [])
+                    if isinstance(prepend, dict):
+                        prepend = [prepend]
+                    return list(prepend) + base_entries
+                return base_entries
+            return []
+
+        return {key: entries for key, entry in raw.items() if (entries := resolve(entry))}
+
     def _load_legendary_groups(self) -> dict:
         """Return a (name, source) → group dict from all bestiary legendary group files."""
         groups: dict = {}
@@ -121,6 +153,7 @@ class DataLoader:
         if not bestiary_dir.exists():
             return monsters
         legendary_groups = self._load_legendary_groups()
+        fluff_map = self._load_monster_fluff()
 
         for file_path in sorted(bestiary_dir.glob("bestiary-*.json")):
             with open(file_path, "r", encoding="utf-8") as f:
@@ -172,6 +205,7 @@ class DataLoader:
                                     monster_data.get("legendaryGroup"), legendary_groups
                                 ),
                                 environment=monster_data.get("environment"),
+                                fluff=fluff_map.get((monster_data["name"], monster_data["source"])),
                             )
                         )
                     except (KeyError, TypeError):
