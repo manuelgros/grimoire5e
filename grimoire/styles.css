@@ -13,6 +13,17 @@ TabbedContent {
     border: tall $accent;
 }
 
+/* Monster detail: frameless layout matching the item/spell detail style */
+MonsterDetailScreen TabbedContent {
+    height: 1fr;
+    border: none;
+    padding: 0;
+}
+
+MonsterDetailScreen TabPane {
+    padding: 0;
+}
+
 TabPane {
     padding: 1 2;
 }

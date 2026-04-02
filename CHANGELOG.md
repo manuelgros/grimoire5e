@@ -3,6 +3,7 @@
 ## Bug Fixes
 - Fix common items (weapons, ammunition, tools, etc.) showing empty descriptions — items without flavor text now display their mechanical stats (damage dice, damage type, range, armor class, strength requirement, stealth note, and weapon properties)
 - Fix weapon property codes showing raw codes with source suffixes (e.g. `V|XPHB`) instead of proper names — properties now display as full names (e.g. `Versatile`, `Finesse`, `Two-Handed`)
+- Fix Back button missing in monster detail view
 
 ## New Features
 - **Monster descriptions**: Monster detail view now has an Info tab showing the monster's lore and description text, loaded from 5etools fluff files. Monsters without available descriptions show a placeholder message.
