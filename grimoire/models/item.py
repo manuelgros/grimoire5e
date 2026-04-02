@@ -53,6 +53,15 @@ class Item(BaseModel):
     baseItem: Optional[str] = None
     requires_str: Optional[str] = None  # Human-readable "applies to" for magic variants
     inherits: Dict[str, Any] = field(default_factory=dict)
+    # Mechanical stats (weapons / armor — used when entries is empty)
+    dmg1: Optional[str] = None          # Primary damage die, e.g. "1d8"
+    dmg2: Optional[str] = None          # Versatile / two-handed damage, e.g. "1d10"
+    dmgType: Optional[str] = None       # Damage type code: S/P/B
+    weapon_properties: Optional[List[str]] = None  # Property codes: V, F, L, T, …
+    item_range: Optional[str] = None    # Range string, e.g. "20/60"
+    ac: Optional[int] = None            # AC value (armor/shields)
+    strength: Optional[int] = None      # Required strength (armor)
+    stealth: Optional[bool] = None      # Stealth disadvantage (armor)
 
     @property
     def rarity_display(self) -> str:

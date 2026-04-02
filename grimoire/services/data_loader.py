@@ -257,6 +257,7 @@ class DataLoader:
             for item_data in data.get("baseitem", []):
                 if item_data.get("source") not in self._allowed:
                     continue
+                strength_raw = item_data.get("strength")
                 items.append(
                     Item(
                         name=item_data["name"],
@@ -268,6 +269,14 @@ class DataLoader:
                         value=item_data.get("value"),
                         weapon=item_data.get("weapon", False),
                         armor=item_data.get("armor", False),
+                        dmg1=item_data.get("dmg1"),
+                        dmg2=item_data.get("dmg2"),
+                        dmgType=item_data.get("dmgType"),
+                        weapon_properties=self._normalize_properties(item_data.get("property")),
+                        item_range=item_data.get("range"),
+                        ac=item_data.get("ac"),
+                        strength=int(strength_raw) if strength_raw is not None else None,
+                        stealth=item_data.get("stealth"),
                     )
                 )
 
@@ -301,6 +310,19 @@ class DataLoader:
                 )
 
         return sorted(items, key=lambda i: i.name)
+
+    def _normalize_properties(self, raw: list) -> list:
+        """Strip |source suffixes and unwrap dict property entries."""
+        if not raw:
+            return raw
+        result = []
+        for p in raw:
+            if isinstance(p, dict):
+                uid = p.get("uid", "")
+                result.append(uid.split("|")[0])
+            elif isinstance(p, str):
+                result.append(p.split("|")[0])
+        return result or None
 
     def _requires_to_type(self, requires: list) -> str:
         """Derive a representative item type code from a magic variant's requires list."""

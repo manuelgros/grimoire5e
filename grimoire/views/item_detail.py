@@ -68,9 +68,64 @@ class ItemDetailScreen(Screen):
             with ScrollableContainer():
                 if it.entries:
                     yield Static(self._format_entries(it.entries))
+                else:
+                    mechanical = self._format_mechanical_stats(it)
+                    if mechanical:
+                        yield Static(mechanical)
                 yield Static(f"\n[dim]Source: {SOURCE_FULL.get(it.source, it.source)}[/dim]")
 
             yield Button("Back", id="back")
+
+    _DMG_TYPE_MAP = {
+        "S": "slashing", "P": "piercing", "B": "bludgeoning",
+        "F": "fire", "C": "cold", "L": "lightning", "A": "acid",
+        "N": "necrotic", "R": "radiant", "T": "thunder", "O": "force",
+        "Y": "psychic", "I": "poison",
+    }
+
+    _PROPERTY_MAP = {
+        "2H": "Two-Handed", "A": "Ammunition", "AF": "Ammunition (Firearm)",
+        "BF": "Burst Fire", "F": "Finesse", "H": "Heavy", "L": "Light",
+        "LD": "Loading", "R": "Reach", "RLD": "Reload", "S": "Special",
+        "T": "Thrown", "V": "Versatile",
+    }
+
+    def _format_mechanical_stats(self, it) -> str:
+        lines = []
+        lc = self._label_color()
+
+        # Weapon damage
+        if it.dmg1:
+            dmg_type = self._DMG_TYPE_MAP.get(it.dmgType or "", it.dmgType or "")
+            dmg_str = f"{it.dmg1} {dmg_type}".strip()
+            if it.dmg2:
+                dmg_str += f" (or {it.dmg2} {dmg_type} two-handed)"
+            lines.append(f"[bold {lc}]Damage:[/bold {lc}] {dmg_str}")
+
+        # Range
+        if it.item_range:
+            lines.append(f"[bold {lc}]Range:[/bold {lc}] {it.item_range} ft.")
+
+        # Armor AC
+        if it.ac is not None:
+            ac_str = str(it.ac)
+            # For shields the ac is a bonus; for armor it's the base
+            if it.category == "shield":
+                ac_str = f"+{it.ac}"
+            lines.append(f"[bold {lc}]Armor Class:[/bold {lc}] {ac_str}")
+
+        if it.strength:
+            lines.append(f"[bold {lc}]Strength:[/bold {lc}] Requires Str {it.strength}")
+
+        if it.stealth:
+            lines.append(f"[bold {lc}]Stealth:[/bold {lc}] Disadvantage")
+
+        # Weapon properties
+        if it.weapon_properties:
+            prop_names = [self._PROPERTY_MAP.get(p, p) for p in it.weapon_properties]
+            lines.append(f"[bold {lc}]Properties:[/bold {lc}] {', '.join(prop_names)}")
+
+        return "\n".join(lines)
 
     def _format_value(self, value: int) -> str:
         if value >= 100:
