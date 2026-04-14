@@ -7,6 +7,9 @@
 
 ## New Features
 - **Monster descriptions**: Monster detail view now has an Info tab showing the monster's lore and description text, loaded from 5etools fluff files. Monsters without available descriptions show a placeholder message.
+- **Class Features tab**: New tab (Ctrl+6) surfacing all class and subclass features (Wild Shape, Warding Flare, Battle Master Maneuvers, Eldritch Invocations, etc.) with filters for Class, Subclass, Level, and Source. Optional / variant features from later books (e.g. Tasha's) are marked with a `[variant]` badge. Class feature files are tied to the book they come from — installing PHB (2014), PHB (2024), Tasha's, Xanathar's, Fizban's, Van Richten's, Explorer's Guide to Wildemount, Bigby's, DMG, or Forgotten Realms: Heroes of Faerun will pull in the corresponding class features the next time you open Manage Sources.
+- **Class Features in Quick Search**: Class features are now included in the global Quick Search, with a new `c:` prefix to narrow results to class features only (e.g. `c: wild shape`).
+- **Navigable cross-references**: When a class feature references related features (e.g. Oath of Vengeance pointing to its Spells and Vow of Enmity), those references render as focusable buttons. Click or press Enter on a reference to jump straight to the target feature. Esc returns directly to the list view; Back walks the chain one step at a time.
 
 ---
 

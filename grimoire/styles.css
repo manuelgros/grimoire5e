@@ -90,6 +90,26 @@ SettingsView {
     margin-right: 2;
 }
 
+Button.ref-link {
+    background: $panel;
+    border: none;
+    color: $accent;
+    height: 1;
+    min-width: 0;
+    padding: 0 1;
+    margin: 0 0 1 0;
+}
+
+Button.ref-link:hover {
+    background: $accent 20%;
+    color: $accent;
+}
+
+Button.ref-link:focus {
+    background: $accent 30%;
+    text-style: bold;
+}
+
 /* ── Themed buttons ──────────────────────────────────────────────────────── */
 
 Button.-primary {

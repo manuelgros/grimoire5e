@@ -119,6 +119,8 @@ class FeatDetailScreen(Screen):
         text = re.sub(r"\{@spell ([^|}]+)(?:\|[^}]*)?\}", r"\1", text)
         text = re.sub(r"\{@creature ([^|}]+)(?:\|[^}]*)?\}", r"\1", text)
         text = re.sub(r"\{@feat ([^|}]+)(?:\|[^}]*)?\}", r"\1", text)
+        text = re.sub(r"\{@classFeature ([^|}]+)(?:\|[^}]*)?\}", r"\1", text)
+        text = re.sub(r"\{@subclassFeature ([^|}]+)(?:\|[^}]*)?\}", r"\1", text)
         text = re.sub(r"\{@skill ([^|}]+)(?:\|[^}]*)?\}", r"\1", text)
         text = re.sub(r"\{@damage ([^}]+)\}", r"\1", text)
         text = re.sub(r"\{@dice ([^}]+)\}", r"\1", text)

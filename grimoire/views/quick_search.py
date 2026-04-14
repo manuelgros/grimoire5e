@@ -5,7 +5,7 @@ from textual.containers import Vertical
 from textual.timer import Timer
 from textual.widgets import Input, Label, ListItem, ListView, Static
 
-from ..models import Rule, Feat, Item, Monster, Spell
+from ..models import Rule, Feat, Item, Monster, Spell, ClassFeature
 from ..services import SearchService, SOURCE_SHORT
 
 from .spell_detail import SpellDetailScreen
@@ -13,13 +13,14 @@ from .monster_detail import MonsterDetailScreen
 from .item_detail import ItemDetailScreen
 from .feat_detail import FeatDetailScreen
 from .rules import RuleDetailScreen
+from .class_feature_detail import ClassFeatureDetailScreen
 
 
-SHORTCUT_LEGEND = "m: Monsters  •  i: Items  •  s: Spells  •  f: Feats  •  r: Rules"
+SHORTCUT_LEGEND = "m: Monsters  •  i: Items  •  s: Spells  •  f: Feats  •  c: Class Features  •  r: Rules"
 
-_PREFIX_MAP = {"m": "monster", "i": "item", "s": "spell", "f": "feat", "r": "rule"}
+_PREFIX_MAP = {"m": "monster", "i": "item", "s": "spell", "f": "feat", "c": "classfeature", "r": "rule"}
 
-_CATEGORY_ORDER = ["spell", "monster", "item", "feat", "rule"]
+_CATEGORY_ORDER = ["spell", "monster", "item", "feat", "classfeature", "rule"]
 
 _SCHOOLS = {
     "A": "Abjuration", "C": "Conjuration", "D": "Divination", "E": "Enchantment",
@@ -37,6 +38,7 @@ class QuickSearchView(Vertical):
         items: List[Item],
         feats: List[Feat],
         rules: List[Rule],
+        classfeatures: List[ClassFeature],
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
@@ -45,6 +47,7 @@ class QuickSearchView(Vertical):
             "monster": monsters,
             "item": items,
             "feat": feats,
+            "classfeature": classfeatures,
             "rule": rules,
         }
         self._results: List[Tuple[str, Any]] = []
@@ -52,7 +55,7 @@ class QuickSearchView(Vertical):
 
     def compose(self) -> ComposeResult:
         yield Input(
-            placeholder="Search all… or prefix with  m:  i:  s:  f:  r:",
+            placeholder="Search all… or prefix with  m:  i:  s:  f:  c:  r:",
             id="search",
         )
         yield Static(SHORTCUT_LEGEND, id="shortcuts")
@@ -111,6 +114,12 @@ class QuickSearchView(Vertical):
         if type_key == "feat":
             cat = item.category or "-"
             return f"[F] {item.name}  •  {cat}  •  {src}"
+        if type_key == "classfeature":
+            who = item.class_name
+            if item.is_subclass and item.subclass_display:
+                who = f"{item.class_name} ({item.subclass_display})"
+            variant = "  •  variant" if item.is_variant else ""
+            return f"[C] {item.name}  •  {who} L{item.level}{variant}  •  {src}"
         if type_key == "rule":
             return f"[R] {item.name}  •  {item.type_display}  •  {src}"
         return item.name
@@ -140,6 +149,7 @@ class QuickSearchView(Vertical):
             "monster": MonsterDetailScreen,
             "item": ItemDetailScreen,
             "feat": FeatDetailScreen,
+            "classfeature": ClassFeatureDetailScreen,
             "rule": RuleDetailScreen,
         }
         if type_key in detail_map:

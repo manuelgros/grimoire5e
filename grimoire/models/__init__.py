@@ -4,6 +4,7 @@ from .monster import Monster, cr_to_float
 from .item import Item
 from .feat import Feat
 from .rule import Rule
+from .class_feature import ClassFeature
 
 __all__ = [
     "BaseModel",
@@ -13,4 +14,5 @@ __all__ = [
     "Item",
     "Feat",
     "Rule",
+    "ClassFeature",
 ]

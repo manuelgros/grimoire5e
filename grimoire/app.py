@@ -8,7 +8,7 @@ from textual.widgets import Footer, Header, Input, TabbedContent, TabPane
 from .config import load_config, save_config, get_custom_sources
 from .services import DataLoader, SOURCE_FULL
 from .themes import GRIMOIRE_THEMES
-from .views import SpellsView, MonstersView, ItemsView, FeatsView, RulesView, QuickSearchView, SettingsView
+from .views import SpellsView, MonstersView, ItemsView, FeatsView, RulesView, ClassFeaturesView, QuickSearchView, SettingsView
 
 
 class GrimoireApp(App):
@@ -24,8 +24,9 @@ class GrimoireApp(App):
         Binding("ctrl+3", "switch_tab('monsters')", "Monsters", show=False),
         Binding("ctrl+4", "switch_tab('items')", "Items", show=False),
         Binding("ctrl+5", "switch_tab('feats')", "Feats", show=False),
-        Binding("ctrl+6", "switch_tab('rules')", "Rules", show=False),
-        Binding("ctrl+7", "switch_tab('settings')", "Settings", show=False),
+        Binding("ctrl+6", "switch_tab('classfeatures')", "Class Features", show=False),
+        Binding("ctrl+7", "switch_tab('rules')", "Rules", show=False),
+        Binding("ctrl+8", "switch_tab('settings')", "Settings", show=False),
         Binding("/", "focus_search", "Search", show=True),
         Binding("escape", "quick_search", "Quick Search", show=True),
     ]
@@ -56,6 +57,7 @@ class GrimoireApp(App):
                     items=self._filter(self.data_loader.items),
                     feats=self._filter(self.data_loader.feats),
                     rules=self._filter(self.data_loader.rules),
+                    classfeatures=self._filter(self.data_loader.classfeatures),
                 )
             with TabPane("Spells", id="spells"):
                 yield SpellsView(
@@ -75,6 +77,11 @@ class GrimoireApp(App):
             with TabPane("Feats", id="feats"):
                 yield FeatsView(
                     self._filter(self.data_loader.feats),
+                    active_sources=self.active_sources,
+                )
+            with TabPane("Class Features", id="classfeatures"):
+                yield ClassFeaturesView(
+                    self._filter(self.data_loader.classfeatures),
                     active_sources=self.active_sources,
                 )
             with TabPane("Rules", id="rules"):
@@ -104,17 +111,20 @@ class GrimoireApp(App):
         items = self._filter(self.data_loader.items)
         feats = self._filter(self.data_loader.feats)
         rules = self._filter(self.data_loader.rules)
+        classfeatures = self._filter(self.data_loader.classfeatures)
 
         self.query_one(SpellsView).reload(spells, self.active_sources)
         self.query_one(MonstersView).reload(monsters, self.active_sources)
         self.query_one(ItemsView).reload(items, self.active_sources)
         self.query_one(FeatsView).reload(feats, self.active_sources)
+        self.query_one(ClassFeaturesView).reload(classfeatures, self.active_sources)
         self.query_one(RulesView).reload(rules, self.active_sources)
         self.query_one(QuickSearchView).reload({
             "spell": spells,
             "monster": monsters,
             "item": items,
             "feat": feats,
+            "classfeature": classfeatures,
             "rule": rules,
         })
 
@@ -129,17 +139,20 @@ class GrimoireApp(App):
         items = self._filter(self.data_loader.items)
         feats = self._filter(self.data_loader.feats)
         rules = self._filter(self.data_loader.rules)
+        classfeatures = self._filter(self.data_loader.classfeatures)
 
         self.query_one(SpellsView).reload(spells, self.active_sources)
         self.query_one(MonstersView).reload(monsters, self.active_sources)
         self.query_one(ItemsView).reload(items, self.active_sources)
         self.query_one(FeatsView).reload(feats, self.active_sources)
+        self.query_one(ClassFeaturesView).reload(classfeatures, self.active_sources)
         self.query_one(RulesView).reload(rules, self.active_sources)
         self.query_one(QuickSearchView).reload({
             "spell": spells,
             "monster": monsters,
             "item": items,
             "feat": feats,
+            "classfeature": classfeatures,
             "rule": rules,
         })
 

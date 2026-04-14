@@ -2,7 +2,7 @@ import json
 from pathlib import Path
 from typing import List, Optional, Set
 
-from ..models import Spell, Monster, Item, Feat, Rule, cr_to_float
+from ..models import Spell, Monster, Item, Feat, Rule, ClassFeature, cr_to_float
 from .sources import SOURCE_FULL
 
 ALLOWED_SOURCES = set(SOURCE_FULL.keys())
@@ -17,6 +17,7 @@ class DataLoader:
         self._items: Optional[List[Item]] = None
         self._feats: Optional[List[Feat]] = None
         self._rules: Optional[List[Rule]] = None
+        self._classfeatures: Optional[List[ClassFeature]] = None
 
     @property
     def spells(self) -> List[Spell]:
@@ -47,6 +48,12 @@ class DataLoader:
         if self._rules is None:
             self._rules = self._load_rules()
         return self._rules
+
+    @property
+    def classfeatures(self) -> List[ClassFeature]:
+        if self._classfeatures is None:
+            self._classfeatures = self._load_class_features()
+        return self._classfeatures
 
     def _load_spells(self) -> List[Spell]:
         spells: List[Spell] = []
@@ -478,3 +485,122 @@ class DataLoader:
                     ))
 
         return sorted(rules, key=lambda r: r.name)
+
+    def _load_class_features(self) -> List[ClassFeature]:
+        class_dir = self.data_dir / "class"
+        if not class_dir.exists():
+            return []
+
+        features: List[ClassFeature] = []
+
+        for file_path in sorted(class_dir.glob("class-*.json")):
+            with open(file_path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+
+            # Build subclass name index: (className, classSource, shortName, subclassSource) -> full name
+            subclass_names: dict = {}
+            for sc in data.get("subclass", []):
+                key = (
+                    sc.get("className"),
+                    sc.get("classSource"),
+                    sc.get("shortName"),
+                    sc.get("source"),
+                )
+                subclass_names[key] = sc.get("name")
+
+            # Build an index of every feature in this file (raw, pre-copy) so we can resolve _copy refs.
+            raw_class = data.get("classFeature", [])
+            raw_subclass = data.get("subclassFeature", [])
+
+            def cf_key(e: dict) -> tuple:
+                return (
+                    e.get("name"),
+                    e.get("source"),
+                    e.get("className"),
+                    e.get("classSource"),
+                    e.get("level"),
+                )
+
+            def scf_key(e: dict) -> tuple:
+                return (
+                    e.get("name"),
+                    e.get("source"),
+                    e.get("className"),
+                    e.get("classSource"),
+                    e.get("subclassShortName"),
+                    e.get("subclassSource"),
+                    e.get("level"),
+                )
+
+            class_index = {cf_key(e): e for e in raw_class if "_copy" not in e}
+            subclass_index = {scf_key(e): e for e in raw_subclass if "_copy" not in e}
+
+            def resolve_copy(entry: dict, is_sub: bool) -> Optional[dict]:
+                copy_ref = entry.get("_copy")
+                if not copy_ref:
+                    return entry
+                if is_sub:
+                    base = subclass_index.get(scf_key(copy_ref))
+                else:
+                    base = class_index.get(cf_key(copy_ref))
+                if base is None:
+                    return None
+                # Shallow merge: start with base, overlay child's explicit fields (except _copy).
+                merged = dict(base)
+                for k, v in entry.items():
+                    if k == "_copy":
+                        continue
+                    merged[k] = v
+                # Base entries carry through unless child overrode them.
+                if "entries" not in entry and "entries" in base:
+                    merged["entries"] = base["entries"]
+                return merged
+
+            def build(entry: dict, is_sub: bool) -> None:
+                if entry.get("source") not in self._allowed:
+                    return
+                resolved = resolve_copy(entry, is_sub) if "_copy" in entry else entry
+                if resolved is None:
+                    return
+                entries = resolved.get("entries", [])
+                if not entries:
+                    return
+                class_name = resolved.get("className")
+                class_source = resolved.get("classSource")
+                if not class_name or not class_source:
+                    return
+
+                sub_short = resolved.get("subclassShortName")
+                sub_source = resolved.get("subclassSource")
+                sub_name = None
+                if is_sub and sub_short and sub_source:
+                    sub_name = subclass_names.get(
+                        (class_name, class_source, sub_short, sub_source)
+                    )
+
+                features.append(
+                    ClassFeature(
+                        name=resolved["name"],
+                        source=resolved["source"],
+                        entries=entries,
+                        class_name=class_name,
+                        class_source=class_source,
+                        level=int(resolved.get("level", 0)),
+                        is_subclass=is_sub,
+                        subclass_short_name=sub_short,
+                        subclass_source=sub_source,
+                        subclass_name=sub_name,
+                        is_variant=bool(resolved.get("isClassFeatureVariant", False)),
+                        header=resolved.get("header"),
+                    )
+                )
+
+            for entry in raw_class:
+                build(entry, is_sub=False)
+            for entry in raw_subclass:
+                build(entry, is_sub=True)
+
+        return sorted(
+            features,
+            key=lambda cf: (cf.class_name, cf.is_subclass, cf.subclass_name or "", cf.level, cf.name),
+        )
