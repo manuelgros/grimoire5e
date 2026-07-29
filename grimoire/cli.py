@@ -1,6 +1,8 @@
 import argparse
 from pathlib import Path
 
+from . import __version__
+
 
 def main() -> None:
     parser = argparse.ArgumentParser(
@@ -28,7 +30,7 @@ def main() -> None:
     parser.add_argument(
         "--version",
         action="version",
-        version="grimoire5e 0.1.0",
+        version=f"grimoire5e {__version__}",
     )
     args = parser.parse_args()
 

@@ -1,6 +1,7 @@
-# Changelog Draft — v0.3.0
+# Changelog — v0.3.0
 
 ## Bug Fixes
+- Fix `grimoire --version` reporting 0.1.0 — the version is now read from the installed package, so it can't fall out of step with the release again
 - Fix option lists in class features not being selectable — Fighting Styles, Eldritch Invocations, Metamagic, Battle Master Maneuvers, Artificer Infusions, Elemental Disciplines, Arcane Shots, Runes and Pact Boons were shown as plain grey text because references nested inside an option list were never turned into buttons. Every option is now a focusable link to its own detail view (e.g. Fighter → Fighting Style → Dueling)
 - Fix option links missing entirely on 2024 features that point at a whole category instead of listing each choice — Fighting Style (Fighter, Paladin, Ranger), Eldritch Invocations, Metamagic, Combat Superiority, Martial Versatility, Sorcerous Versatility, Infusions Known and Epic Boon now list their options as links. Option lists are scoped to the feature's edition, so a 2014 feature no longer offers the 2024 reprints of the same options
 - Fix nested cross-references to other class and subclass features never becoming links (47 more references across the class data, e.g. options that point at a subclass feature)
