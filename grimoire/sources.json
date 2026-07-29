@@ -6,6 +6,7 @@
     "conditionsdiseases.json",
     "variantrules.json",
     "feats.json",
+    "optionalfeatures.json",
     "items.json",
     "items-base.json",
     "magicvariants.json",

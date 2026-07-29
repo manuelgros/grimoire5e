@@ -5,6 +5,7 @@ from .item import Item
 from .feat import Feat
 from .rule import Rule
 from .class_feature import ClassFeature
+from .optional_feature import OptionalFeature, FEATURE_TYPE_LABELS
 
 __all__ = [
     "BaseModel",
@@ -15,4 +16,6 @@ __all__ = [
     "Feat",
     "Rule",
     "ClassFeature",
+    "OptionalFeature",
+    "FEATURE_TYPE_LABELS",
 ]

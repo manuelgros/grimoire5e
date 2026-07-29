@@ -165,7 +165,10 @@ class FeatDetailScreen(Screen):
 
     def on_key(self, event: events.Key) -> None:
         if event.key == "escape":
-            self.app.pop_screen()
+            # When reached from a feature's option list, close that chain too.
+            from .feature_detail_base import unwind_feature_screens
+
+            unwind_feature_screens(self.app)
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         if event.button.id == "back":

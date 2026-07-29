@@ -126,6 +126,7 @@ class DataManager:
             "item":         (None,       f"items-{src_code}.json",            "item"),
             "magicvariant": (None,       f"magicvariants-{src_code}.json",    "magicvariant"),
             "feat":         (None,       f"feats-{src_code}.json",            "feat"),
+            "optionalfeature": (None,    f"optionalfeatures-{src_code}.json", "optionalfeature"),
         }
 
         for key, (subdir, filename, out_key) in type_map.items():
@@ -169,6 +170,7 @@ class DataManager:
             self.data_dir / f"items-{src_code}.json",
             self.data_dir / f"magicvariants-{src_code}.json",
             self.data_dir / f"feats-{src_code}.json",
+            self.data_dir / f"optionalfeatures-{src_code}.json",
             self.data_dir / f"conditionsdiseases-{src_code}.json",
         ]
         for path in candidates:

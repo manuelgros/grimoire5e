@@ -2,7 +2,9 @@ import json
 from pathlib import Path
 from typing import List, Optional, Set
 
-from ..models import Spell, Monster, Item, Feat, Rule, ClassFeature, cr_to_float
+from ..models import (
+    Spell, Monster, Item, Feat, Rule, ClassFeature, OptionalFeature, cr_to_float,
+)
 from .sources import SOURCE_FULL
 
 ALLOWED_SOURCES = set(SOURCE_FULL.keys())
@@ -18,6 +20,7 @@ class DataLoader:
         self._feats: Optional[List[Feat]] = None
         self._rules: Optional[List[Rule]] = None
         self._classfeatures: Optional[List[ClassFeature]] = None
+        self._optionalfeatures: Optional[List[OptionalFeature]] = None
 
     @property
     def spells(self) -> List[Spell]:
@@ -54,6 +57,12 @@ class DataLoader:
         if self._classfeatures is None:
             self._classfeatures = self._load_class_features()
         return self._classfeatures
+
+    @property
+    def optionalfeatures(self) -> List[OptionalFeature]:
+        if self._optionalfeatures is None:
+            self._optionalfeatures = self._load_optional_features()
+        return self._optionalfeatures
 
     def _load_spells(self) -> List[Spell]:
         spells: List[Spell] = []
@@ -485,6 +494,34 @@ class DataLoader:
                     ))
 
         return sorted(rules, key=lambda r: r.name)
+
+    def _load_optional_features(self) -> List[OptionalFeature]:
+        features: List[OptionalFeature] = []
+        # optionalfeatures.json + optionalfeatures-{src}.json for custom sources
+        of_files = [self.data_dir / "optionalfeatures.json"] + sorted(
+            self.data_dir.glob("optionalfeatures-*.json")
+        )
+        for file_path in of_files:
+            if not file_path.exists():
+                continue
+            with open(file_path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            for of_data in data.get("optionalfeature", []):
+                if of_data.get("source") not in self._allowed:
+                    continue
+                features.append(
+                    OptionalFeature(
+                        name=of_data["name"],
+                        source=of_data["source"],
+                        entries=of_data.get("entries", []),
+                        feature_types=of_data.get("featureType", []),
+                        prerequisite=of_data.get("prerequisite"),
+                        consumes=of_data.get("consumes"),
+                        is_variant=bool(of_data.get("isClassFeatureVariant", False)),
+                    )
+                )
+
+        return sorted(features, key=lambda of: of.name)
 
     def _load_class_features(self) -> List[ClassFeature]:
         class_dir = self.data_dir / "class"

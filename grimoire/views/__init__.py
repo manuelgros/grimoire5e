@@ -9,9 +9,12 @@ from .quick_search import QuickSearchView
 from .settings import SettingsView
 from .upload_source import UploadSourceScreen
 from .remove_custom_sources import RemoveCustomSourcesScreen
+from .class_feature_detail import ClassFeatureDetailScreen
+from .optional_feature_detail import OptionalFeatureDetailScreen
 
 __all__ = [
     "BaseListView", "SpellsView", "MonstersView", "ItemsView", "FeatsView",
     "RulesView", "ClassFeaturesView", "QuickSearchView", "SettingsView",
     "UploadSourceScreen", "RemoveCustomSourcesScreen",
+    "ClassFeatureDetailScreen", "OptionalFeatureDetailScreen",
 ]
