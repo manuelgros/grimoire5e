@@ -1,6 +1,6 @@
 # Grimoire 5e
 
-A terminal UI for D&D 5th Edition reference material — spells, monsters, items, feats, and rules — all searchable and filterable without leaving your keyboard.
+A terminal UI for D&D 5th Edition reference material — spells, monsters, items, feats, class features, and rules — all searchable and filterable without leaving your keyboard.
 
 ![PyPI](https://img.shields.io/pypi/v/grimoire5e)
 ![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue)
@@ -8,11 +8,12 @@ A terminal UI for D&D 5th Edition reference material — spells, monsters, items
 
 ## Features
 
-- **Quick Search** across all content types with `s:`, `m:`, `i:`, `f:`, `r:` prefixes
-- **Spells** — filter by level, school, class, source; sort by name / level / school
-- **Monsters** — filter by CR, type, environment, source; sort by name / CR / type
-- **Items** — filter by type (weapon, armor, wondrous, potion, poison…), rarity, attunement
-- **Feats** — filter by source
+- **Quick Search** across all content types with `s:`, `m:`, `i:`, `f:`, `c:`, `r:` prefixes
+- **Spells** — filter by level, school, class, source, concentration and ritual; sort by name / level / school
+- **Monsters** — filter by CR, type, environment, source; sort by name / CR / type; lore on the Info tab
+- **Items** — filter by type (weapon, armor, wondrous, potion, poison…), rarity, attunement, source
+- **Feats** — filter by category (general, origin, fighting style, epic boon) and source
+- **Class Features** — every class and subclass feature, filterable by class, subclass, level and source, with selectable links to the options they grant (Fighting Styles, Eldritch Invocations, Metamagic, Maneuvers, Infusions…)
 - **Rules** — conditions, status effects, diseases, and core rules from XPHB
 - **Themes** — Classic D&D, 5e Tools, Arcane, Parchment, Gelatinous Cube (+ Textual built-ins)
 - **Manage Sources** in-app — download new books or toggle active ones without restarting
@@ -72,9 +73,42 @@ Data is downloaded from the public [5etools mirror](https://github.com/5etools-m
 |----------|------|
 | macOS    | `~/Library/Application Support/grimoire/` |
 | Linux    | `~/.local/share/grimoire/` |
-| Windows  | `%APPDATA%\grimoire5e\grimoire\` |
+| Windows  | `%LOCALAPPDATA%\grimoire5e\grimoire\` |
 
-The selection can be later edited via the Settings tab
+Downloaded books live in a `data/` subfolder there, alongside a `config.json` holding your theme and installed-source list.
+
+The selection can be later edited via the Settings tab, which is also where you switch themes.
+
+## Upgrading
+
+Rerunning the install command does **not** upgrade an existing installation — `pip install grimoire5e` reports "requirement already satisfied" and `pipx install grimoire5e` refuses because the package is already there. Use the upgrade form instead:
+
+```bash
+pipx upgrade grimoire5e          # if you installed with pipx
+pip install --upgrade grimoire5e # if you installed with pip
+```
+
+Check the result with:
+
+```bash
+grimoire --version
+```
+
+### After upgrading: refresh your sources
+
+Upgrading replaces the program but never touches your downloaded books, so nothing you already have is re-downloaded. New releases sometimes need **additional data files** for the features they add, and those files are only fetched when you next visit the source manager.
+
+Open **Settings → Manage Sources** (or run `grimoire --manage-sources`), leave your book selection exactly as it is, and choose Apply. Only genuinely missing files are downloaded — files already on disk are skipped — so applying an unchanged selection is quick and safe.
+
+Skipping this step is harmless but leaves newer features without their data. Upgrading from v0.2.0 to v0.3.0, for example, an empty Class Features tab or option lists reading "None available" means the class feature and optional feature files haven't been downloaded yet.
+
+## Uninstalling
+
+```bash
+pipx uninstall grimoire5e   # or: pip uninstall grimoire5e
+```
+
+Your downloaded books are stored outside the package and are **not** removed by uninstalling — deliberately, so reinstalling doesn't mean downloading everything again. To reclaim the space (typically tens of megabytes), delete the data directory listed under [First Run](#first-run).
 
 ## Usage
 
@@ -88,13 +122,17 @@ grimoire --import /path/to/file.json  # import a custom source and exit
 
 | Key | Action |
 |-----|--------|
-| `Tab` / `Shift+Tab` | Navigate between filters |
+| `←` / `→` | Move between the filter dropdowns |
+| `Tab` | Leave the filter row for the results list |
+| `Shift+Tab` | Leave the filter row for the search box |
 | `↑` / `↓` | Move through the list |
 | `Enter` | Open detail view |
 | `/` | Focus search |
-| `Esc` | Return to Quick Search |
-| `Ctrl+1–7` | Jump to tab |
+| `Esc` | Close a detail view, or return to Quick Search |
+| `Ctrl+1–8` | Jump to tab |
 | `q` | Quit |
+
+In a detail view, `↑` / `↓` scroll the text and `Tab` reaches the Back button. Where a feature links to related content (a class feature's options, for instance), `Enter` follows the link; `Esc` then returns straight to the list, while Back retraces one step at a time.
 
 ## Custom Sources
 
@@ -131,6 +169,7 @@ Your JSON file must be a 5etools-format "data bundle" — a single object with o
 | `baseitem` | Array of mundane/base items |
 | `magicvariant` | Array of magic variant items (e.g. +1 weapons) |
 | `feat` | Array of feats |
+| `optionalfeature` | Array of optional features (Fighting Styles, Invocations, Metamagic…) |
 | `condition` | Array of conditions |
 | `disease` | Array of diseases |
 | `status` | Array of status effects |
@@ -155,13 +194,15 @@ XPHB · XDMG · XMM
 PHB · DMG · MM
 
 **Supplements**
-XGE · TCE · VGM · MTF · MPMM · FTD · BGG · VRGR · MOT · GGR · EGW · SCC · AI · BMT · PHB
+XGE · TCE · VGM · MTF · MPMM · FTD · BGG · VRGR · MOT · GGR · ERLW · EGW · SCC · BAM · AI · BMT
 
 **Adventures**
 HotDQ · RoT · PotA · OotA · CoS · SKT · ToA · WDH · WDMM · BGDIA · IDRotF · WBtW · FRAiF
 
 **Forgotten Realms**
 FRHoF
+
+Full book titles for these codes are listed in **Settings → Manage Sources**.
 
 ## Legal
 
