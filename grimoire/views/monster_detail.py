@@ -39,6 +39,61 @@ _SECTIONS: List[Tuple[str, str]] = [
     ("legendary", "Legendary Actions"),
 ]
 
+# Spellcasting frequency groups: JSON key → suffix appended to the use count.
+_SPELL_FREQ: List[Tuple[str, str]] = [
+    ("rest",      "/rest"),
+    ("restShort", "/short rest"),
+    ("restLong",  "/long rest"),
+    ("daily",     "/day"),
+    ("weekly",    "/week"),
+    ("monthly",   "/month"),
+    ("yearly",    "/year"),
+    ("legendary", " legendary action"),
+]
+
+
+_ALIGNMENT_ABV = {
+    "L": "Lawful", "N": "Neutral", "C": "Chaotic",
+    "G": "Good", "E": "Evil", "U": "Unaligned", "A": "Any",
+    # Axis-neutral markers, only meaningful inside the groupings below.
+    "NX": "Neutral", "NY": "Neutral",
+}
+_ETHICAL_AXIS = frozenset({"L", "NX", "C"})
+_MORAL_AXIS = frozenset({"G", "NY", "E"})
+
+
+def _alignment_grouping(codes: List[str]) -> Optional[str]:
+    """Collapse a full axis of alignments into 5etools' shorthand, e.g. 'any evil alignment'."""
+    present = set(codes)
+    if len(present) == 5:
+        for missing, text in [
+            ("G", "any non-good alignment"),
+            ("E", "any non-evil alignment"),
+            ("L", "any non-lawful alignment"),
+            ("C", "any non-chaotic alignment"),
+        ]:
+            if missing not in present:
+                return text
+    if len(present) == 4:
+        if _ETHICAL_AXIS <= present:
+            if "G" in present:
+                return "any good alignment"
+            if "E" in present:
+                return "any evil alignment"
+        if _MORAL_AXIS <= present:
+            if "L" in present:
+                return "any lawful alignment"
+            if "C" in present:
+                return "any chaotic alignment"
+    if present == {"N", "NX", "NY"}:
+        return "any neutral alignment"
+    return None
+
+
+def _ordinal(n: int) -> str:
+    suffix = "th" if 11 <= n % 100 <= 13 else {1: "st", 2: "nd", 3: "rd"}.get(n % 10, "th")
+    return f"{n}{suffix}"
+
 
 class MonsterDetailScreen(Screen):
     """Detail screen for a single monster stat block."""
@@ -160,7 +215,9 @@ class MonsterDetailScreen(Screen):
         buckets: Dict[str, List[str]] = {key: [] for key, _ in _SECTIONS}
 
         for sc in m.spellcasting or []:
-            display_as = sc.get("displayAs", "action")
+            # 5etools treats spellcasting as a trait unless displayAs says otherwise;
+            # older books (MM 2014 etc.) omit the key entirely.
+            display_as = sc.get("displayAs", "trait")
             if display_as in buckets:
                 buckets[display_as].append(self._format_spellcasting(sc))
 
@@ -180,60 +237,104 @@ class MonsterDetailScreen(Screen):
                 yield label, buckets[key]
 
     def _strip_tags(self, text: str) -> str:
-        text = re.sub(r"\{@actTrigger\}", "Trigger:", text)
-        text = re.sub(r"\{@actResponse(?:\s+\w+)?\}", "Response:", text)
-        text = re.sub(r"\{@actSave\s+\w+\}", "", text)
-        text = re.sub(r"\{@actSaveFail\}", "On a failed save:", text)
-        text = re.sub(r"\{@actSaveSuccess\}", "On a successful save:", text)
-        text = re.sub(
-            r"\{@recharge\s*(\d+)?\}",
-            lambda m: f"(Recharge {m.group(1)}-6)" if m.group(1) else "(Recharge 6)",
-            text,
-        )
-        text = re.sub(
-            r"\{@atk ([^}]+)\}",
-            lambda m: _ATK_MAP.get(m.group(1).strip(), m.group(1)),
-            text,
-        )
-        text = re.sub(
-            r"\{@atkr ([^}]+)\}",
-            lambda m: _ATKR_MAP.get(m.group(1).strip(), m.group(1)),
-            text,
-        )
-        text = re.sub(r"\{@h\}", "", text)
-        text = re.sub(r"\{@hit ([^}]+)\}", r"+\1", text)
-        text = re.sub(r"\{@dc ([^}]+)\}", r"DC \1", text)
-        text = re.sub(r"\{@(?:damage|dice) ([^}]+)\}", r"\1", text)
-        text = re.sub(r"\{@i ([^}]+)\}", r"\1", text)
-        text = re.sub(r"\{@\w+ ([^|}]+)(?:\|[^}]*)?\}", r"\1", text)
+        # Resolve innermost tags first, then loop — some sources nest tags,
+        # e.g. Flee, Mortals! writes {@sup {@cite Casting Times|FleeMortals|A}}.
+        for _ in range(4):
+            before = text
+            text = re.sub(r"\{@actTrigger\}", "Trigger:", text)
+            text = re.sub(r"\{@actResponse(?:\s+\w+)?\}", "Response:", text)
+            text = re.sub(r"\{@actSave\s+\w+\}", "", text)
+            text = re.sub(r"\{@actSaveFail\}", "On a failed save:", text)
+            text = re.sub(r"\{@actSaveSuccess\}", "On a successful save:", text)
+            text = re.sub(r"\{@actSaveSuccessOrFail\}", "On a failed or successful save:", text)
+            text = re.sub(r"\{@hom\}", "Hit or Miss: ", text)
+            text = re.sub(r"\{@hitYourSpellAttack\}", "your spell attack modifier", text)
+            text = re.sub(
+                r"\{@recharge\s*(\d+)?\}",
+                lambda m: f"(Recharge {m.group(1)}-6)" if m.group(1) else "(Recharge 6)",
+                text,
+            )
+            text = re.sub(
+                r"\{@atk ([^{}]+)\}",
+                lambda m: _ATK_MAP.get(m.group(1).strip(), m.group(1)),
+                text,
+            )
+            text = re.sub(
+                r"\{@atkr ([^{}]+)\}",
+                lambda m: _ATKR_MAP.get(m.group(1).strip(), m.group(1)),
+                text,
+            )
+            text = re.sub(r"\{@h\}", "", text)
+            text = re.sub(r"\{@hit ([^{}]+)\}", r"+\1", text)
+            text = re.sub(r"\{@dc ([^{}]+)\}", r"DC \1", text)
+            text = re.sub(r"\{@(?:damage|dice) ([^{}]+)\}", r"\1", text)
+            text = re.sub(r"\{@i ([^{}]+)\}", r"\1", text)
+            # Superscript footnote markers carry no meaning in a terminal.
+            text = re.sub(r"\{@sup [^{}]*\}", "", text)
+            text = re.sub(r"\{@\w+ ([^|{}]+)(?:\|[^{}]*)?\}", r"\1", text)
+            if text == before:
+                break
         # Clean up artifacts left by stripped tags (bare commas, extra spaces)
         text = re.sub(r",\s*,", ",", text)
         text = re.sub(r"^\s*,\s*|\s*,\s*$", "", text)
         text = re.sub(r"\s{2,}", " ", text)
         return text.strip()
 
-    def _format_alignment(self, alignment: List[str]) -> str:
-        align_map = {
-            "L": "Lawful", "N": "Neutral", "C": "Chaotic",
-            "G": "Good", "E": "Evil", "U": "Unaligned", "A": "Any",
-        }
-        return " ".join(align_map.get(a, a) for a in alignment)
+    def _format_alignment(self, alignment: List[Any]) -> str:
+        def expand(codes: List[Any]) -> str:
+            codes = [c for c in codes if isinstance(c, str)]
+            return _alignment_grouping(codes) or " ".join(
+                _ALIGNMENT_ABV.get(c, c) for c in codes
+            )
+
+        if not alignment:
+            return "—"
+
+        # Some creatures list weighted alternatives instead of plain codes, e.g. Cloud Giant is
+        # [{"alignment": ["N","G"], "chance": 50}, {"alignment": ["N","E"], "chance": 50}]
+        if any(isinstance(e, dict) for e in alignment):
+            parts = []
+            for entry in alignment:
+                codes = entry.get("alignment", []) if isinstance(entry, dict) else [entry]
+                text = expand(codes)
+                if not text:
+                    continue
+                chance = entry.get("chance") if isinstance(entry, dict) else None
+                parts.append(f"{text} ({chance}%)" if chance else text)
+            return " or ".join(parts) if parts else "—"
+
+        return expand(alignment) or "—"
 
     def _format_ac(self, ac: List[Any]) -> str:
-        parts = []
+        parts: List[str] = []
         for entry in ac:
             if isinstance(entry, int):
                 parts.append(str(entry))
-            elif isinstance(entry, dict):
-                value = str(entry.get("ac", "?"))
-                armor = entry.get("armor") or entry.get("from", [])
-                if armor:
-                    value += f" ({', '.join(str(a) for a in armor)})"
-                condition = entry.get("condition")
-                if condition:
-                    value += f" {condition}"
-                parts.append(value)
-        return ", ".join(parts) if parts else "—"
+                continue
+            if not isinstance(entry, dict):
+                continue
+            # Summoned creatures and similar have no fixed number, only prose.
+            if "ac" not in entry and entry.get("special"):
+                parts.append(self._strip_tags(str(entry["special"])))
+                continue
+            value = str(entry.get("ac", "?"))
+            armor = entry.get("armor") or entry.get("from", [])
+            if armor:
+                value += f" ({', '.join(self._strip_tags(str(a)) for a in armor)})"
+            condition = entry.get("condition")
+            if condition:
+                value += f" {self._strip_tags(str(condition))}"
+            if entry.get("braces"):
+                value = f"({value})"
+            parts.append(value)
+
+        if not parts:
+            return "—"
+        # A braced entry qualifies the one before it: "12 (15 with mage armor)".
+        result = parts[0]
+        for part in parts[1:]:
+            result += f" {part}" if part.startswith("(") else f", {part}"
+        return result
 
     def _format_hp(self, hp: Dict[str, Any]) -> str:
         if "special" in hp:
@@ -278,14 +379,33 @@ class MonsterDetailScreen(Screen):
         parts = []
         for item in items:
             if isinstance(item, str):
-                parts.append(item)
+                parts.append(self._strip_tags(item))
             elif isinstance(item, dict):
-                inner = item.get("immune") or item.get("resist") or item.get("special", [])
-                text = ", ".join(str(x) for x in inner) if isinstance(inner, list) else str(inner)
+                inner = (
+                    item.get("immune")
+                    or item.get("resist")
+                    or item.get("vulnerable")
+                    or item.get("conditionImmune")
+                    or item.get("special", [])
+                )
+                if isinstance(inner, list):
+                    text = ", ".join(
+                        self._strip_tags(x) if isinstance(x, str) else self._format_resist_immune([x])
+                        for x in inner
+                    )
+                else:
+                    text = self._strip_tags(str(inner))
+                pre_note = item.get("preNote")
+                if pre_note:
+                    text = f"{self._strip_tags(str(pre_note))} {text}".strip()
                 note = item.get("note")
                 if note:
-                    text += f" ({note})"
-                parts.append(text)
+                    note = self._strip_tags(str(note))
+                    # Some sources already wrap their note in parentheses.
+                    text = f"{text} {note}" if note.startswith("(") else f"{text} ({note})"
+                text = text.strip()
+                if text:
+                    parts.append(text)
         return ", ".join(parts) if parts else "—"
 
     def _format_feature(self, feature: Dict[str, Any]) -> str:
@@ -293,33 +413,99 @@ class MonsterDetailScreen(Screen):
         body = self._format_entries(feature.get("entries", []))
         return f"[bold]{name}.[/bold] {body}" if name else body
 
+    def _entry_text(self, entries: List[Any]) -> str:
+        """Flatten header/footer entries into a single line of text."""
+        parts = [
+            self._strip_tags(e) if isinstance(e, str) else self._format_entries([e])
+            for e in entries or []
+        ]
+        return " ".join(p for p in parts if p)
+
+    def _spell_list(self, spells: Any) -> str:
+        """Render a list of spell entries, skipping ones flagged as hidden."""
+        names: List[str] = []
+        for spell in spells or []:
+            if isinstance(spell, dict):
+                if spell.get("hidden"):
+                    continue
+                spell = spell.get("entry", "")
+            text = self._strip_tags(str(spell))
+            if text:
+                names.append(text)
+        return ", ".join(names)
+
+    @staticmethod
+    def _sorted_freq(freq: Dict[str, Any]) -> List[Tuple[str, Any]]:
+        """Order use counts high to low. Keys may carry an 'e' suffix (e.g. '3e')."""
+        def sort_key(item: Tuple[str, Any]) -> Tuple[int, str]:
+            count = item[0]
+            digits = count[:-1] if count.endswith("e") else count
+            try:
+                return (-int(digits), count)
+            except ValueError:
+                return (0, count)
+
+        return sorted(freq.items(), key=sort_key)
+
+    @staticmethod
+    def _slot_label(level: int, data: Dict[str, Any]) -> str:
+        """Build a leveled-spell label, e.g. 'Cantrips (at will)' or '1st level (4 slots)'."""
+        if level == 0:
+            return "Cantrips (at will)"
+        label = f"{_ordinal(level)} level"
+        lower = data.get("lower")
+        if lower is not None:
+            label = f"{_ordinal(int(lower))}-{label}"
+        slots = data.get("slots")
+        if slots:
+            label += f" ({slots} slot{'s' if slots != 1 else ''})"
+        return label
+
     def _format_spellcasting(self, sc: Dict[str, Any]) -> str:
         name = self._strip_tags(sc.get("name", "Spellcasting"))
-        header_parts = [self._strip_tags(e) for e in sc.get("headerEntries", [])]
-        header = " ".join(header_parts)
+        header = self._entry_text(sc.get("headerEntries", []))
 
         lines: List[str] = []
         lines.append(f"[bold]{name}.[/bold] {header}" if header else f"[bold]{name}[/bold]")
 
-        if "will" in sc:
-            spells = ", ".join(self._strip_tags(s) for s in sc["will"])
-            lines.append(f"  At will: {spells}")
+        # Groups listed in "hidden" are already described by the header entries.
+        hidden = set(sc.get("hidden") or ())
 
-        for freq_key, freq_suffix in [
-            ("daily",   "/day"),
-            ("restLong", "/long rest"),
-            ("legendary", " legendary action"),
-        ]:
-            freq_dict = sc.get(freq_key, {})
-            for count, spells in sorted(freq_dict.items()):
-                spell_str = ", ".join(self._strip_tags(s) for s in spells)
-                suffix = f"{count}{freq_suffix} each" if len(spells) > 1 else f"{count}{freq_suffix}"
-                lines.append(f"  {suffix}: {spell_str}")
+        for key, label in [("constant", "Constant"), ("will", "At will")]:
+            if key in hidden:
+                continue
+            spell_str = self._spell_list(sc.get(key))
+            if spell_str:
+                lines.append(f"  {label}: {spell_str}")
 
-        if "recharge" in sc:
-            for roll, spells in sc["recharge"].items():
-                spell_str = ", ".join(self._strip_tags(s) for s in spells)
-                lines.append(f"  Recharge {roll}-6: {spell_str}")
+        for freq_key, freq_suffix in _SPELL_FREQ:
+            if freq_key in hidden:
+                continue
+            for count, spells in self._sorted_freq(sc.get(freq_key) or {}):
+                spell_str = self._spell_list(spells)
+                if not spell_str:
+                    continue
+                each = count.endswith("e")
+                uses = f"{count[:-1] if each else count}{freq_suffix}"
+                lines.append(f"  {uses}{' each' if each else ''}: {spell_str}")
+
+        if "recharge" not in hidden:
+            for roll, spells in self._sorted_freq(sc.get("recharge") or {}):
+                spell_str = self._spell_list(spells)
+                if spell_str:
+                    lines.append(f"  Recharge {roll}-6: {spell_str}")
+
+        if "spells" not in hidden:
+            leveled = sc.get("spells") or {}
+            for level in sorted(leveled, key=lambda lvl: int(lvl)):
+                data = leveled[level] or {}
+                spell_str = self._spell_list(data.get("spells"))
+                if spell_str:
+                    lines.append(f"  {self._slot_label(int(level), data)}: {spell_str}")
+
+        footer = self._entry_text(sc.get("footerEntries", []))
+        if footer:
+            lines.append(f"  [dim]{footer}[/dim]")
 
         return "\n".join(lines)
 

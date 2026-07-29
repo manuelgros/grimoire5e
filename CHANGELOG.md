@@ -1,6 +1,15 @@
 # Changelog Draft — v0.3.0
 
 ## Bug Fixes
+- Fix spellcasting monsters from older books (Monster Manual 2014, Icewind Dale, etc.) only showing their at-will spells — prepared and known spells are now listed by level with their slot counts (e.g. the Archmage's `1st level (4 slots): detect magic, identify, mage armor*, magic missile`), including spell-list footnotes and warlock-style level ranges
+- Fix Spellcasting appearing under Actions instead of Traits for monsters from 2014-era books
+- Fix redundant spell lines being repeated when the monster's spellcasting description already names those spells
+- Fix daily spell uses showing an internal marker (`1e/day`) instead of `1/day each`, and list them highest-use-first as the books do
+- Fix Armor Class showing `?` for summoned creatures whose AC is a formula (e.g. Aberrant Spirit's "11 + the level of the spell"), and showing raw markup for monsters wearing named armor (e.g. `{@item studded leather armor|PHB}`)
+- Fix Alignment showing internal codes for monsters with a range of alignments (e.g. the Assassin now reads "any non-good alignment" instead of "Lawful NX Chaotic NY Evil") and for monsters with weighted alignments (Cloud Giant, Empyrean)
+- Fix app crash when opening the detail view of monsters with weighted alignments (Cloud Giant, Empyrean, Draconic Spirit)
+- Fix damage resistance and immunity lines showing doubled parentheses and dropping qualifiers such as "nonmagical"
+- Fix nested tags in third-party sources leaking raw markup into spell lists (e.g. `{@cite Casting Times}`), and render the `{@hom}`, `{@hitYourSpellAttack}`, and `{@actSaveSuccessOrFail}` tags as readable text
 - Fix common items (weapons, ammunition, tools, etc.) showing empty descriptions — items without flavor text now display their mechanical stats (damage dice, damage type, range, armor class, strength requirement, stealth note, and weapon properties)
 - Fix weapon property codes showing raw codes with source suffixes (e.g. `V|XPHB`) instead of proper names — properties now display as full names (e.g. `Versatile`, `Finesse`, `Two-Handed`)
 - Fix Back button missing in monster detail view
