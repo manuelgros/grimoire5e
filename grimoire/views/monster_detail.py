@@ -1,5 +1,5 @@
 import re
-from typing import Any, Dict, Generator, List, Tuple
+from typing import Any, Dict, Generator, List, Optional, Tuple
 
 from rich.text import Text
 from textual import events

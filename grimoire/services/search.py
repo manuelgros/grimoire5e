@@ -11,28 +11,35 @@ class SearchResult:
 class SearchService:
     """Handles search with optional tag prefixes and fuzzy matching."""
 
+    # Recognised type prefixes. Keep in sync with _PREFIX_MAP in views/quick_search.py.
+    TAG_MAP = {
+        "s": "spell",
+        "m": "monster",
+        "i": "item",
+        "f": "feat",
+        "c": "classfeature",
+        "r": "rule",
+    }
+
     @staticmethod
     def parse_query(query: str) -> Tuple[Optional[str], str]:
         """
         Parse search query for tag prefix.
         Returns: (tag, search_term)
+
+        Only a recognised prefix is split off. Names legitimately contain colons
+        (e.g. "Bigby: Hand"), so an unknown prefix is left as part of the term.
         """
         if ":" not in query:
             return None, query
 
         tag, term = query.split(":", 1)
         tag = tag.lower().strip()
-        term = term.strip()
 
-        tag_map = {
-            "s": "spell",
-            "m": "monster",
-            "i": "item",
-            "f": "feat",
-            "r": "rule",
-        }
+        if tag not in SearchService.TAG_MAP:
+            return None, query
 
-        return tag_map.get(tag, tag), term
+        return SearchService.TAG_MAP[tag], term.strip()
 
     @staticmethod
     def tiered_match(query: str, text: str) -> float:

@@ -1,3 +1,13 @@
+# Changelog — v0.3.1
+
+## Bug Fixes
+- Fix the app failing to start at all on Python 3.11, 3.12 and 3.13 — v0.3.0 crashed with `NameError: name 'Optional' is not defined` before the window ever opened. Only Python 3.14 was unaffected, which is why the problem escaped the 0.3.0 release. Anyone who could not launch v0.3.0 should upgrade
+- Fix the monster Info tab being empty for every monster — the lore files it reads were never included in the download list, so v0.3.0 always showed "No description available for this monster" no matter which books were installed. Descriptions are now fetched the next time you open Manage Sources, and cover every book that has them (Monster Manual 2014 and 2025, Volo's, Mordenkainen's, Fizban's, Bigby's, the adventures, and the rest). The 2024 Dungeon Master's Guide, the 2014 Player's Handbook and Xanathar's publish no monster lore, so monsters from those three books keep the placeholder
+- Fix mundane items in custom uploaded sources being silently discarded — a book's `baseitem` entries (its ordinary weapons, armor, tools and gear) were documented as supported but never actually imported, so they appeared in neither the Items tab nor its filters. They are now imported alongside magic items, with their damage dice, armor class, strength requirement, stealth note and weapon properties
+- Fix searching for a name containing a colon returning the wrong results — typing `Bigby: Hand` in a list view silently searched for `Hand` instead, because everything before the colon was treated as a type prefix. Only the real prefixes (`s:`, `m:`, `i:`, `f:`, `c:`, `r:`) are now stripped, and `c:` works in the list views as it already did in Quick Search
+
+---
+
 # Changelog — v0.3.0
 
 ## Bug Fixes

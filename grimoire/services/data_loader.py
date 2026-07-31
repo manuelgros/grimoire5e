@@ -265,9 +265,13 @@ class DataLoader:
                     )
                 )
 
-        # ── Base / mundane items: items-base.json ────────────────────────────
-        base_path = self.data_dir / "items-base.json"
-        if base_path.exists():
+        # ── Base / mundane items: items-base.json + items-base-{src}.json ────
+        base_files = [self.data_dir / "items-base.json"] + sorted(
+            self.data_dir.glob("items-base-*.json")
+        )
+        for base_path in base_files:
+            if not base_path.exists():
+                continue
             with open(base_path, "r", encoding="utf-8") as f:
                 data = json.load(f)
             for item_data in data.get("baseitem", []):
