@@ -24,3 +24,6 @@ old_files/
 
 # Test scripts
 /test_data_loader.py
+
+# Internal project briefing (not for distribution)
+PROJECT_OVERVIEW.md
