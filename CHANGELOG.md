@@ -1,6 +1,10 @@
 # Changelog — Unreleased
 
+## Improvements
+- The monster Info tab now follows the stat block's colour scheme — creature headings take the theme's section colour (the one used for Actions and Traits) and labels such as **Habitat:** and **Treasure:** take the theme's label colour (the one used for Armor Class and Hit Points), instead of everything being flat bold. Applies to every theme; the stat block itself is unchanged
+
 ## Bug Fixes
+- Fix personality traits collapsing into the wrong label in the Info tab — for Baba Lysaga, Acererak, Madam Eva, Ezmerelda d'Avenir and 13 other named NPCs, every line under "<Name>'s Traits" was labelled with that same heading, so the real labels (Ideal, Bond, Flaw) never appeared. The heading now sits above the list and each trait keeps its own label
 - Fix sentences being garbled where one cross-reference sat inside another — Find Familiar's note about additional animal forms, 36 class features carrying the "optional class features" note (Bardic Versatility, Cantrip Versatility, Blessed Strikes, Harness Divine Power and the rest), several rules, and items including Mace of Smiting and Vicious Weapon all showed a mangled fragment with stray markup where a normal sentence belonged. Nested references now resolve from the inside out. **No `{@…}` markup is left anywhere in the app** — across every spell, monster, item, feat, rule and class feature from all 37 books
 - Fix the spell save DC and attack modifier lines missing from class Spellcasting features — Wizard, Cleric, Druid, Bard, Sorcerer, Warlock, Paladin, Ranger, Artificer and the Eldritch Knight / Arcane Trickster all printed a raw data blob where the two formulae belong. They now read "Spell save DC = 8 + your proficiency bonus + your Intelligence modifier" as the books do
 - Fix bulleted lists in rules losing their content — **Concentration** listed the things that break concentration as raw data instead of text, as did Cackle Fever, Sewer Plague and six other rules. Named bullets also lost their label, so **Long Rest** showed its benefits as unlabelled paragraphs instead of "Regain All HP.", "Ability Scores Restored." and so on

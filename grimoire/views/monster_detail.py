@@ -175,7 +175,11 @@ class MonsterDetailScreen(Screen):
                 with TabPane("Info", id="info"):
                     with ScrollableContainer():
                         if m.fluff:
-                            yield Static(self._format_entries(m.fluff))
+                            yield Static(self._format_entries(
+                                m.fluff,
+                                header_color=self._section_color(),
+                                label_color=self._label_color(),
+                            ))
                         else:
                             yield Static("[dim]No description available for this monster.[/dim]")
 
@@ -511,7 +515,26 @@ class MonsterDetailScreen(Screen):
 
         return "\n".join(lines)
 
-    def _format_entries(self, entries: List[Any]) -> str:
+    def _format_entries(
+        self,
+        entries: List[Any],
+        header_color: Optional[str] = None,
+        label_color: Optional[str] = None,
+    ) -> str:
+        """
+        Render entry structures as markup.
+
+        The stat block leaves headings plain bold, because its own section
+        headers already carry the colour. The Info tab passes the theme's
+        section and label colours so its headings and "Habitat:"-style labels
+        line up with the stat block's visual hierarchy.
+        """
+        def heading(text: str) -> str:
+            return f"[bold {header_color}]{text}[/bold {header_color}]" if header_color else f"[bold]{text}[/bold]"
+
+        def label(text: str) -> str:
+            return f"[bold {label_color}]{text}[/bold {label_color}]" if label_color else f"[bold]{text}[/bold]"
+
         def render(entry: Any) -> str:
             if isinstance(entry, str):
                 return self._strip_tags(entry)
@@ -522,7 +545,7 @@ class MonsterDetailScreen(Screen):
                     items_rendered = []
                     for e in entry.get("items", []):
                         if isinstance(e, dict) and e.get("type") == "item":
-                            name = entry.get("name") or e.get("name", "")
+                            name = e.get("name", "")
                             if "entry" in e:
                                 body = self._strip_tags(e["entry"]) if isinstance(e["entry"], str) else render(e["entry"])
                             elif "entries" in e:
@@ -530,7 +553,7 @@ class MonsterDetailScreen(Screen):
                             else:
                                 body = ""
                             if name:
-                                items_rendered.append(f"[bold]{self._strip_tags(name)}[/bold] {body}".strip())
+                                items_rendered.append(f"{label(self._strip_tags(name))} {body}".strip())
                             else:
                                 items_rendered.append(body)
                         else:
@@ -538,22 +561,31 @@ class MonsterDetailScreen(Screen):
                                 items_rendered.append(render(e))
                             else:
                                 items_rendered.append(f"- {render(e)}")
-                    return "\n".join(items_rendered)
+                    body = "\n".join(items_rendered)
+                    # A named list titles the group; its items keep their own names
+                    list_name = entry.get("name")
+                    if list_name:
+                        return f"{label(self._strip_tags(str(list_name)))}\n{body}"
+                    return body
                 if e_type == "item":
-                    name = entry.get("name", "")
+                    name = self._strip_tags(str(entry.get("name", "")))
                     if "entries" in entry:
                         body = "\n".join(render(e) for e in entry["entries"])
                     else:
                         raw = entry.get("entry", "")
                         body = self._strip_tags(raw) if isinstance(raw, str) else render(raw)
-                    return f"[bold]{name}.[/bold] {body}" if name else body
+                    if not name:
+                        return body
+                    # Names already ending in punctuation don't want another dot
+                    sep = "" if name[-1] in ".:!?" else "."
+                    return f"{label(name + sep)} {body}"
                 if e_type == "table":
                     return format_table(entry, self._strip_tags, self._label_color(), render)
                 if e_type in {"entries", "section"}:
                     header = entry.get("name")
                     body = "\n\n".join(render(e) for e in entry.get("entries", []))
                     if header:
-                        return f"[bold]{self._strip_tags(header)}[/bold]\n\n{body}"
+                        return f"{heading(self._strip_tags(header))}\n\n{body}"
                     return body
                 if "entries" in entry:
                     return "\n".join(render(e) for e in entry["entries"])
