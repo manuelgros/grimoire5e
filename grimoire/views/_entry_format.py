@@ -9,6 +9,46 @@ RULE_MAX_WIDTH = 60
 _POS_INFINITE = 100000000000000000000
 
 
+_ATTR_FULL = {
+    "str": "Strength", "dex": "Dexterity", "con": "Constitution",
+    "int": "Intelligence", "wis": "Wisdom", "cha": "Charisma",
+}
+
+
+def format_attributes(attributes: List[str]) -> str:
+    """
+    Mirror Parser.attrChooseToFull in the 5etools source: one attribute reads
+    "Intelligence modifier", several read "Strength or Dexterity modifier
+    (your choice)".
+    """
+    if len(attributes) == 1:
+        attr = attributes[0]
+        if attr == "spellcasting":
+            return "spellcasting ability modifier"
+        return f"{_ATTR_FULL.get(attr, attr.title())} modifier"
+    names = [_ATTR_FULL.get(a, a.title()) for a in attributes]
+    return f"{' or '.join(names)} modifier (your choice)"
+
+
+def format_ability_line(entry: dict, label_color: str) -> str:
+    """
+    Render `{"type": "abilityDc"}` / `{"type": "abilityAttackMod"}` — the spell
+    save DC and attack modifier formulae in class Spellcasting features.
+
+    Uses the 2014 ("classic") phrasing from 5etools' render.js; every entry of
+    these types in the data comes from a 2014-era book (PHB, TCE, XGE).
+    """
+    name = entry.get("name", "")
+    attrs = format_attributes(entry.get("attributes", []))
+    if entry.get("type") == "abilityDc":
+        tail = f"8 + your proficiency bonus + your {attrs}"
+        label = f"{name} save DC"
+    else:
+        tail = f"your proficiency bonus + your {attrs}"
+        label = f"{name} attack modifier"
+    return f"[bold {label_color}]{label}[/bold {label_color}] = {tail}"
+
+
 def format_roll_cell(cell: dict, strip: Callable[[str], str]) -> str:
     """
     Render a `{"type": "cell"}` table cell, mirroring Renderer's logic in

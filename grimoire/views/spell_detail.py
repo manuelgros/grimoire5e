@@ -159,7 +159,7 @@ class SpellDetailScreen(Screen):
                     header = entry.get("name")
                     body = "\n".join(render_entry(e) for e in entry.get("entries", []))
                     if header:
-                        return f"[bold]{header}[/bold]\n{body}"
+                        return f"[bold]{self._strip_tags(str(header))}[/bold]\n{body}"
                     return body
                 if "entries" in entry:
                     return "\n".join(render_entry(e) for e in entry["entries"])

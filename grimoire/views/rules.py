@@ -57,7 +57,7 @@ class RuleDetailScreen(Screen):
                 e_type = entry.get("type")
                 if e_type == "list":
                     lines = "\n".join(
-                        f"  • {self._strip_tags(str(i))}" for i in entry.get("items", [])
+                        f"  • {self._inline_render(i)}" for i in entry.get("items", [])
                     )
                     widgets.append(Static(lines))
                     widgets.append(Static(""))
@@ -72,7 +72,9 @@ class RuleDetailScreen(Screen):
                     header = entry.get("name")
                     if header:
                         lc = self._label_color()
-                        widgets.append(Static(f"[bold {lc}]{header}[/bold {lc}]"))
+                        widgets.append(
+                            Static(f"[bold {lc}]{self._strip_tags(str(header))}[/bold {lc}]")
+                        )
                     for sub in self._render_entries(entry.get("entries", [])):
                         widgets.append(sub)
                 else:
@@ -91,13 +93,30 @@ class RuleDetailScreen(Screen):
                 return "\n".join(
                     f"  • {self._inline_render(i)}" for i in entry.get("items", [])
                 )
+            if e_type == "item":
+                # Named bullet, e.g. "Fever. The creature gains 1 Exhaustion level."
+                name = self._strip_tags(str(entry.get("name", "")))
+                if "entries" in entry:
+                    body = "\n".join(self._inline_render(e) for e in entry["entries"])
+                else:
+                    body = self._inline_render(entry.get("entry", ""))
+                lc = self._label_color()
+                return f"[bold {lc}]{name}.[/bold {lc}] {body}" if name else body
             if e_type in {"entries", "section"}:
                 header = entry.get("name")
                 body = "\n".join(self._inline_render(e) for e in entry.get("entries", []))
                 lc = self._label_color()
-                return f"[bold {lc}]{header}[/bold {lc}]\n{body}" if header else body
+                if header:
+                    return f"[bold {lc}]{self._strip_tags(str(header))}[/bold {lc}]\n{body}"
+                return body
+            if e_type == "table":
+                return format_table(
+                    entry, self._strip_tags, self._label_color(), self._inline_render
+                )
             if "entries" in entry:
                 return "\n".join(self._inline_render(e) for e in entry["entries"])
+            if "entry" in entry:
+                return self._inline_render(entry["entry"])
             return str(entry)
         if isinstance(entry, list):
             return "\n".join(self._inline_render(e) for e in entry)

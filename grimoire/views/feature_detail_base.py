@@ -9,6 +9,7 @@ from textual.widgets import Button, Static
 from ..models import FEATURE_TYPE_LABELS
 from ..services import SOURCE_FULL, SOURCE_SHORT
 from ..themes import THEME_LABEL_COLORS, _DEFAULT_LABEL_COLOR
+from ._entry_format import format_ability_line, format_table
 
 # Entry types that point at another feature, and the key holding the reference.
 REF_KEYS = {
@@ -373,7 +374,7 @@ class FeatureDetailScreen(Screen):
                 if e_type == "list":
                     return "\n".join(f"- {render(e)}" for e in entry.get("items", []))
                 if e_type == "item":
-                    name = entry.get("name", "")
+                    name = self._strip_tags(str(entry.get("name", "")))
                     if "entries" in entry:
                         body = "\n".join(render(e) for e in entry["entries"])
                     else:
@@ -383,15 +384,15 @@ class FeatureDetailScreen(Screen):
                 if e_type in {"entries", "section"}:
                     header = entry.get("name")
                     body = "\n".join(render(e) for e in entry.get("entries", []))
-                    return f"[bold {lc}]{header}[/bold {lc}]\n{body}" if header else body
+                    if header:
+                        return f"[bold {lc}]{self._strip_tags(str(header))}[/bold {lc}]\n{body}"
+                    return body
                 if e_type == "table":
-                    title = entry.get("caption", "")
-                    rows = entry.get("rows", [])
-                    lines = [f"[bold {lc}]{title}[/bold {lc}]"] if title else []
-                    for row in rows:
-                        cells = [self._strip_tags(str(c)) if isinstance(c, str) else str(c) for c in row]
-                        lines.append(" | ".join(cells))
-                    return "\n".join(lines)
+                    return format_table(entry, self._strip_tags, lc, render)
+                if e_type in {"abilityDc", "abilityAttackMod"}:
+                    return format_ability_line(entry, lc)
+                if e_type == "statblock":
+                    return f"[dim]→ {self._strip_tags(str(entry.get('name', '')))}[/dim]"
                 if e_type in REF_KEYS:
                     ref = entry.get(REF_KEYS[e_type], "")
                     name = ref.split("|")[0] if isinstance(ref, str) else str(ref)

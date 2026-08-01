@@ -172,7 +172,7 @@ class FeatDetailScreen(Screen):
                 if e_type == "list":
                     return "\n".join(f"- {render(e)}" for e in entry.get("items", []))
                 if e_type == "item":
-                    name = entry.get("name", "")
+                    name = self._strip_tags(str(entry.get("name", "")))
                     if "entries" in entry:
                         body = "\n".join(render(e) for e in entry["entries"])
                     else:
@@ -191,7 +191,9 @@ class FeatDetailScreen(Screen):
                             text = "\n" + text
                         parts.append(text)
                     body = "\n".join(parts)
-                    return f"[bold {lc}]{header}[/bold {lc}]\n{body}" if header else body
+                    if header:
+                        return f"[bold {lc}]{self._strip_tags(str(header))}[/bold {lc}]\n{body}"
+                    return body
                 if "entries" in entry:
                     return "\n".join(render(e) for e in entry["entries"])
                 if "entry" in entry:

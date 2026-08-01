@@ -152,6 +152,7 @@ class ItemDetailScreen(Screen):
         text = re.sub(r"\{@dice ([^}]+)\}", r"\1", text)
         text = re.sub(r"\{@dc ([^}]+)\}", r"DC \1", text)
         text = re.sub(r"\{@hit ([^}]+)\}", r"+\1", text)
+        text = re.sub(r"\{@h\}", "", text)
         text = re.sub(r"\{@\w+ ([^|}]+)(?:\|[^}]*)?\}", r"\1", text)
         return text.strip()
 
@@ -164,7 +165,7 @@ class ItemDetailScreen(Screen):
                 if e_type == "list":
                     return "\n".join(f"- {render(e)}" for e in entry.get("items", []))
                 if e_type == "item":
-                    name = entry.get("name", "")
+                    name = self._strip_tags(str(entry.get("name", "")))
                     if "entries" in entry:
                         body = "\n".join(render(e) for e in entry["entries"])
                     else:
@@ -176,7 +177,9 @@ class ItemDetailScreen(Screen):
                 if e_type in {"entries", "section"}:
                     header = entry.get("name")
                     body = "\n".join(render(e) for e in entry.get("entries", []))
-                    return f"[bold]{header}[/bold]\n{body}" if header else body
+                    if header:
+                        return f"[bold]{self._strip_tags(str(header))}[/bold]\n{body}"
+                    return body
                 if "entries" in entry:
                     return "\n".join(render(e) for e in entry["entries"])
                 if "entry" in entry:
