@@ -110,6 +110,28 @@ To update them, open **Settings → Manage Sources** and choose **Re-download Al
 
 The notice is a local version comparison between the app and your data; it makes no network request. Grimoire only goes online when you download something.
 
+## Running the tests
+
+```bash
+pip install --editable ".[dev]"
+pytest
+```
+
+The unit tests cover the shared entry renderers and always run. The corpus tests
+render every entry of every book you have downloaded and assert the output is
+clean — no leaked data structures, no leftover 5etools markup, no dropped
+fields. They use your installed data automatically, or point them somewhere
+specific:
+
+```bash
+GRIMOIRE_TEST_DATA=/path/to/data pytest
+```
+
+With no data available they skip rather than fail, so a fresh checkout stays
+green. Worth running after changing anything in `grimoire/views/` or bumping the
+pinned 5etools version in `sources.json` — the more books you have installed,
+the more the corpus tests cover.
+
 ## Uninstalling
 
 ```bash

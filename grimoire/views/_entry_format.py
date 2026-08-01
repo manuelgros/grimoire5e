@@ -1,6 +1,58 @@
 """Shared renderers for 5etools entry structures."""
 
+import re
 from typing import Any, Callable, List, Optional
+
+# Which pipe-separated segment of a reference tag holds the text to display.
+#
+# 5etools writes cross-references as {@tag name|source|…|displayText}, and which
+# segment is the display text depends on the tag: {@item Holy Water (Flask)|PHB|
+# holy water} shows "holy water" (3rd), while {@classFeature …} carries six.
+# Transcribed from the _TagPipedDisplayText* classes in 5etools' render.js — do
+# not guess these, a wrong index silently shows a source code or a filter query.
+# Tags absent here (and text-style tags like {@i}) display the first segment.
+TAG_DISPLAY_SEGMENT = {
+    # segment 3
+    "action": 3, "background": 3, "boon": 3, "charoption": 3, "cite": 3,
+    "class": 3, "condition": 3, "creature": 3, "creatureFluff": 3,
+    "crochet": 3, "crochetFluff": 3, "cult": 3, "deck": 3, "disease": 3,
+    "facility": 3, "feat": 3, "hazard": 3, "item": 3, "itemMastery": 3,
+    "itemProperty": 3, "language": 3, "legroup": 3, "object": 3,
+    "optfeature": 3, "psionic": 3, "race": 3, "raceFluff": 3, "recipe": 3,
+    "reward": 3, "sense": 3, "skill": 3, "spell": 3, "status": 3, "table": 3,
+    "trap": 3, "variantrule": 3, "vehicle": 3, "vehupgrade": 3,
+    # segment 4
+    "card": 4, "deity": 4,
+    # segment 5 — quickref's uid is name|source|page|hash|displayText
+    "quickref": 5, "subclass": 5,
+    # segment 6
+    "classFeature": 6,
+    # segment 8
+    "subclassFeature": 8,
+}
+
+# Brace-free body, so this only ever matches an innermost tag; callers loop.
+_REFERENCE_TAG = re.compile(r"\{@(\w+) ([^{}]*)\}")
+
+
+def tag_display_text(tag: str, body: str) -> str:
+    """Return the segment of a reference tag's body that should be displayed."""
+    parts = body.split("|")
+    segment = TAG_DISPLAY_SEGMENT.get(tag, 1)
+    text = parts[segment - 1] if len(parts) >= segment else parts[0]
+    # An explicitly empty display segment means "fall back to the name"
+    return text or parts[0]
+
+
+def strip_reference_tags(text: str) -> str:
+    """
+    Replace every `{@tag …}` with its display text.
+
+    Handles only cross-reference tags; callers strip semantic tags such as
+    `{@dc}`, `{@hit}` and `{@recharge}` first, since those need their own
+    wording rather than a segment of the body.
+    """
+    return _REFERENCE_TAG.sub(lambda m: tag_display_text(m.group(1), m.group(2)), text)
 
 RULE_MAX_WIDTH = 60
 

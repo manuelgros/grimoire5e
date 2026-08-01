@@ -11,7 +11,7 @@ from textual.widgets import Button, Static, TabbedContent, TabPane, Tabs
 from ..models import Monster
 from ..services import SOURCE_FULL
 from ..themes import THEME_LABEL_COLORS, THEME_SECTION_COLORS, _DEFAULT_LABEL_COLOR, _DEFAULT_SECTION_COLOR
-from ._entry_format import format_quote, format_table
+from ._entry_format import format_quote, format_table, strip_reference_tags
 
 _ATK_MAP = {
     "m":     "Melee Attack",
@@ -274,10 +274,9 @@ class MonsterDetailScreen(Screen):
             text = re.sub(r"\{@hit ([^{}]+)\}", r"+\1", text)
             text = re.sub(r"\{@dc ([^{}]+)\}", r"DC \1", text)
             text = re.sub(r"\{@(?:damage|dice) ([^{}]+)\}", r"\1", text)
-            text = re.sub(r"\{@i ([^{}]+)\}", r"\1", text)
             # Superscript footnote markers carry no meaning in a terminal.
             text = re.sub(r"\{@sup [^{}]*\}", "", text)
-            text = re.sub(r"\{@\w+ ([^|{}]+)(?:\|[^{}]*)?\}", r"\1", text)
+            text = strip_reference_tags(text)
             if text == before:
                 break
         # Clean up artifacts left by stripped tags (bare commas, extra spaces)

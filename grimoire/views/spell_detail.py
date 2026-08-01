@@ -11,7 +11,7 @@ from textual.widgets import Button, Static
 from ..models import Spell
 from ..services import SOURCE_FULL
 from ..themes import THEME_LABEL_COLORS, _DEFAULT_LABEL_COLOR
-from ._entry_format import format_quote, format_table
+from ._entry_format import format_quote, format_table, strip_reference_tags
 
 
 class SpellDetailScreen(Screen):
@@ -136,16 +136,8 @@ class SpellDetailScreen(Screen):
             text = re.sub(r"\{@dice ([^{}]+)\}", r"\1", text)
             text = re.sub(r"\{@hit ([^{}]+)\}", r"+\1", text)
             text = re.sub(r"\{@dc ([^{}]+)\}", r"DC \1", text)
-            text = re.sub(r"\{@condition ([^|{}]+)(?:\|[^{}]*)?\}", r"\1", text)
-            text = re.sub(r"\{@spell ([^|{}]+)(?:\|[^{}]*)?\}", r"\1", text)
-            text = re.sub(r"\{@creature ([^|{}]+)(?:\|[^{}]*)?\}", r"\1", text)
-            text = re.sub(r"\{@item ([^|{}]+)(?:\|[^{}]*)?\}", r"\1", text)
-            text = re.sub(r"\{@action ([^|{}]+)(?:\|[^{}]*)?\}", r"\1", text)
-            text = re.sub(r"\{@skill ([^|{}]+)(?:\|[^{}]*)?\}", r"\1", text)
-            text = re.sub(r"\{@feat ([^|{}]+)(?:\|[^{}]*)?\}", r"\1", text)
-            text = re.sub(r"\{@b ([^{}]+)\}", r"\1", text)
-            text = re.sub(r"\{@i ([^{}]+)\}", r"\1", text)
-            text = re.sub(r"\{@\w+ ([^|{}]+)(?:\|[^{}]*)?\}", r"\1", text)
+            text = re.sub(r"\{@h\}", "", text)
+            text = strip_reference_tags(text)
             if text == before:
                 break
         return text

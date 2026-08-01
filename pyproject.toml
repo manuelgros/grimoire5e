@@ -26,12 +26,18 @@ classifiers = [
     "Topic :: Games/Entertainment :: Role-Playing",
 ]
 
+[project.optional-dependencies]
+dev = ["pytest>=8.0.0"]
+
 [project.urls]
 Homepage = "https://github.com/manuelgros/grimoire5e"
 Repository = "https://github.com/manuelgros/grimoire5e"
 
 [project.scripts]
 grimoire = "grimoire.cli:main"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
 
 [tool.hatch.build.targets.wheel]
 packages = ["grimoire"]

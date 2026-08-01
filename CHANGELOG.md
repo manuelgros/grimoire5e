@@ -1,9 +1,11 @@
 # Changelog — Unreleased
 
 ## Improvements
+- Added a test suite (`pip install --editable ".[dev]" && pytest`) covering the shared entry renderers, plus corpus tests that render every entry of every installed book and check for leaked data structures, leftover markup and silently dropped fields. They skip cleanly when no books are downloaded
 - The monster Info tab now follows the stat block's colour scheme — creature headings take the theme's section colour (the one used for Actions and Traits) and labels such as **Habitat:** and **Treasure:** take the theme's label colour (the one used for Armor Class and Hit Points), instead of everything being flat bold. Applies to every theme; the stat block itself is unchanged
 
 ## Bug Fixes
+- Fix cross-references showing the wrong wording — around 1,500 passages displayed a reference's internal name instead of the words the book actually prints. Text now reads "you finish a Short or Long Rest" rather than "a Short Rest or Long Rest", "as if you were concentrating on a spell" rather than "concentration on a spell", "behind total cover" rather than "behind Cover", "your Hit Point maximum" rather than "Hit Points maximum", and "a 30-foot Cube originating from you" rather than "a 30-foot Cube [Area of Effect] originating from you". Affects every content type — monsters, items, spells, class features, feats and rules
 - Fix a beholder's eye rays running together as one unbroken wall of text — "1. Charm Ray", "2. Paralyzing Ray", "3. Fear Ray" and the rest lost their names entirely, leaving no way to tell which effect belonged to which ray. Affects the Beholder, Death Tyrant, Belashyrra, Beholder Zombie and 14 other monsters (95 named effects in total)
 - Fix flavour quotes losing their attribution — 528 quotes across 398 monsters, spells and items showed the quoted text but silently dropped the "— speaker" line beneath it
 - Fix sidebars losing their titles — 195 boxed asides (Dragonnel Steeds, and others on Aarakocra, Annis Hag, Arcanaloth, Amethyst Greatwyrm…) rendered as untitled prose running into the surrounding text

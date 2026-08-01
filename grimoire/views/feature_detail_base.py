@@ -9,7 +9,12 @@ from textual.widgets import Button, Static
 from ..models import FEATURE_TYPE_LABELS
 from ..services import SOURCE_FULL, SOURCE_SHORT
 from ..themes import THEME_LABEL_COLORS, _DEFAULT_LABEL_COLOR
-from ._entry_format import format_ability_line, format_quote, format_table
+from ._entry_format import (
+    format_ability_line,
+    format_quote,
+    format_table,
+    strip_reference_tags,
+)
 
 # Entry types that point at another feature, and the key holding the reference.
 REF_KEYS = {
@@ -349,23 +354,12 @@ class FeatureDetailScreen(Screen):
         # "{@i 3rd-level barbarian {@variantrule optional class features|tce|…}}".
         for _ in range(4):
             before = text
-            text = re.sub(r"\{@filter ([^|{}]+)(?:\|[^{}]*)?\}", r"\1", text)
-            text = re.sub(r"\{@action ([^|{}]+)(?:\|[^{}]*)?\}", r"\1", text)
-            text = re.sub(r"\{@condition ([^|{}]+)(?:\|[^{}]*)?\}", r"\1", text)
-            text = re.sub(r"\{@item ([^|{}]+)(?:\|[^{}]*)?\}", r"\1", text)
-            text = re.sub(r"\{@spell ([^|{}]+)(?:\|[^{}]*)?\}", r"\1", text)
-            text = re.sub(r"\{@creature ([^|{}]+)(?:\|[^{}]*)?\}", r"\1", text)
-            text = re.sub(r"\{@feat ([^|{}]+)(?:\|[^{}]*)?\}", r"\1", text)
-            text = re.sub(r"\{@optfeature ([^|{}]+)(?:\|[^{}]*)?\}", r"\1", text)
-            text = re.sub(r"\{@classFeature ([^|{}]+)(?:\|[^{}]*)?\}", r"\1", text)
-            text = re.sub(r"\{@subclassFeature ([^|{}]+)(?:\|[^{}]*)?\}", r"\1", text)
-            text = re.sub(r"\{@skill ([^|{}]+)(?:\|[^{}]*)?\}", r"\1", text)
             text = re.sub(r"\{@damage ([^{}]+)\}", r"\1", text)
             text = re.sub(r"\{@dice ([^{}]+)\}", r"\1", text)
             text = re.sub(r"\{@dc ([^{}]+)\}", r"DC \1", text)
             text = re.sub(r"\{@hit ([^{}]+)\}", r"+\1", text)
             text = re.sub(r"\{@h\}", "", text)
-            text = re.sub(r"\{@\w+ ([^|{}]+)(?:\|[^{}]*)?\}", r"\1", text)
+            text = strip_reference_tags(text)
             if text == before:
                 break
         return text.strip()

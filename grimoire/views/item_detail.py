@@ -11,7 +11,7 @@ from textual.widgets import Button, Static
 from ..models import Item
 from ..services import SOURCE_FULL
 from ..themes import THEME_LABEL_COLORS, _DEFAULT_LABEL_COLOR
-from ._entry_format import format_quote, format_table
+from ._entry_format import format_quote, format_table, strip_reference_tags
 
 _RARITY_COLORS = {
     "Uncommon":  "#55cc55",
@@ -160,17 +160,12 @@ class ItemDetailScreen(Screen):
         # nested tag before its wrapper (e.g. Mace of Smiting's "{@note … {@link …}}").
         for _ in range(4):
             before = text
-            text = re.sub(r"\{@action ([^|{}]+)(?:\|[^{}]*)?\}", r"\1", text)
-            text = re.sub(r"\{@condition ([^|{}]+)(?:\|[^{}]*)?\}", r"\1", text)
-            text = re.sub(r"\{@item ([^|{}]+)(?:\|[^{}]*)?\}", r"\1", text)
-            text = re.sub(r"\{@spell ([^|{}]+)(?:\|[^{}]*)?\}", r"\1", text)
-            text = re.sub(r"\{@creature ([^|{}]+)(?:\|[^{}]*)?\}", r"\1", text)
             text = re.sub(r"\{@damage ([^{}]+)\}", r"\1", text)
             text = re.sub(r"\{@dice ([^{}]+)\}", r"\1", text)
             text = re.sub(r"\{@dc ([^{}]+)\}", r"DC \1", text)
             text = re.sub(r"\{@hit ([^{}]+)\}", r"+\1", text)
             text = re.sub(r"\{@h\}", "", text)
-            text = re.sub(r"\{@\w+ ([^|{}]+)(?:\|[^{}]*)?\}", r"\1", text)
+            text = strip_reference_tags(text)
             if text == before:
                 break
 

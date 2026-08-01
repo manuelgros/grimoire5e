@@ -10,7 +10,7 @@ from textual.widgets import Button, Input, Label, ListItem, Select, Static
 from ..services import SearchService, SOURCE_FULL
 from ..models import Rule
 from ..themes import THEME_LABEL_COLORS, _DEFAULT_LABEL_COLOR
-from ._entry_format import format_quote, format_table
+from ._entry_format import format_quote, format_table, strip_reference_tags
 from .base import BaseListView
 
 
@@ -43,11 +43,11 @@ class RuleDetailScreen(Screen):
         # nested tag before its wrapper.
         for _ in range(4):
             before = text
-            text = re.sub(r"\{@condition ([^|{}]+)(?:\|[^{}]*)?\}", r"\1", text)
-            text = re.sub(r"\{@variantrule ([^|{}]+)(?:\|[^{}]*)?\}", r"\1", text)
-            text = re.sub(r"\{@action ([^|{}]+)(?:\|[^{}]*)?\}", r"\1", text)
+            text = re.sub(r"\{@dc ([^{}]+)\}", r"DC \1", text)
+            text = re.sub(r"\{@hit ([^{}]+)\}", r"+\1", text)
+            text = re.sub(r"\{@(?:damage|dice) ([^{}]+)\}", r"\1", text)
             text = re.sub(r"\{@h\}", "", text)
-            text = re.sub(r"\{@\w+ ([^|{}]+)(?:\|[^{}]*)?\}", r"\1", text)
+            text = strip_reference_tags(text)
             if text == before:
                 break
         return text.strip()
