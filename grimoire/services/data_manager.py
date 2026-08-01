@@ -20,6 +20,10 @@ class DataManager:
         return self._manifest["base_url"]
 
     @property
+    def manifest_version(self) -> str:
+        return self._manifest["5etools_version"]
+
+    @property
     def global_files(self) -> List[str]:
         return self._manifest["global_files"]
 
@@ -37,7 +41,9 @@ class DataManager:
         cfg = load_config()
         return cfg.get("installed_sources", [])
 
-    def save_installed_sources(self, source_ids: List[str]) -> None:
+    def save_installed_sources(
+        self, source_ids: List[str], data_version: Optional[str] = None
+    ) -> None:
         cfg = load_config()
         # Custom uploaded sources aren't in the manifest, so they never appear in
         # source_ids. Preserve them, or applying changes in Manage Sources would
@@ -45,6 +51,8 @@ class DataManager:
         custom = set(cfg.get("custom_sources", {}))
         cfg["installed_sources"] = list(source_ids) + sorted(custom - set(source_ids))
         cfg["data_dir"] = str(self.data_dir)
+        if data_version is not None:
+            cfg["data_version"] = data_version
         save_config(cfg)
 
     def files_for_sources(self, source_ids: List[str]) -> List[str]:
@@ -60,6 +68,7 @@ class DataManager:
         self,
         source_ids: List[str],
         progress_cb: Optional[Callable[[str, int, int], None]] = None,
+        force: bool = False,
     ) -> None:
         """
         Download all files for the given source IDs plus global files.
@@ -67,28 +76,48 @@ class DataManager:
         Args:
             source_ids: List of source ID strings (e.g. ["XPHB", "XGE"])
             progress_cb: Optional callback(file_path, current, total) for progress reporting
+            force: Re-download files that already exist instead of skipping them
         """
         all_files = self.files_for_sources(source_ids)
-        files = [f for f in all_files if not (self.data_dir / f).exists()]
+        files = all_files if force else [f for f in all_files if not (self.data_dir / f).exists()]
+        skipped = len(all_files) - len(files)
         total = len(files)
 
-        with httpx.Client(timeout=30.0, follow_redirects=True) as client:
-            for idx, file_path in enumerate(files):
-                if progress_cb:
-                    progress_cb(file_path, idx, total)
+        try:
+            with httpx.Client(timeout=30.0, follow_redirects=True) as client:
+                for idx, file_path in enumerate(files):
+                    if progress_cb:
+                        progress_cb(file_path, idx, total)
 
-                url = f"{self.base_url}/{file_path}"
-                dest = self.data_dir / file_path
-                dest.parent.mkdir(parents=True, exist_ok=True)
+                    url = f"{self.base_url}/{file_path}"
+                    dest = self.data_dir / file_path
+                    dest.parent.mkdir(parents=True, exist_ok=True)
 
-                response = client.get(url)
-                response.raise_for_status()
-                dest.write_bytes(response.content)
+                    response = client.get(url)
+                    response.raise_for_status()
+                    dest.write_bytes(response.content)
+        except httpx.TimeoutException as e:
+            raise RuntimeError(
+                "The download timed out. Check your internet connection and try again."
+            ) from e
+        except httpx.HTTPStatusError as e:
+            raise RuntimeError(
+                f"The 5etools mirror returned HTTP {e.response.status_code} for {e.request.url}."
+            ) from e
+        except httpx.HTTPError as e:
+            raise RuntimeError(
+                "Could not reach the 5etools mirror. Check your internet connection."
+            ) from e
 
         if progress_cb:
             progress_cb("", total, total)
 
-        self.save_installed_sources(source_ids)
+        # Only stamp the data version when every file on disk is known to come from
+        # the current manifest — either we forced a full re-download, or nothing was
+        # skipped because the data dir was empty. Stamping after an incremental add
+        # would mark a mostly-stale data dir as up to date and suppress the notice.
+        stamp = self.manifest_version if (force or skipped == 0) else None
+        self.save_installed_sources(source_ids, data_version=stamp)
 
     def import_source(self, json_path: Path) -> Dict:
         """

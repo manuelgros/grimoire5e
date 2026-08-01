@@ -80,7 +80,7 @@ SettingsView {
     height: auto;
 }
 
-/* Manage sources: side-by-side Cancel / Apply buttons */
+/* Manage sources: row of Apply / Re-download All / Cancel buttons */
 #buttons {
     height: auto;
     align: left middle;

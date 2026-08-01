@@ -102,6 +102,14 @@ Open **Settings → Manage Sources** (or run `grimoire --manage-sources`), leave
 
 Skipping this step is harmless but leaves newer features without their data. Upgrading from v0.2.0 to v0.3.0, for example, an empty Class Features tab or option lists reading "None available" means the class feature and optional feature files haven't been downloaded yet.
 
+### Getting updated data for books you already have
+
+Apply only fetches files you're missing. When a release points at a newer 5etools snapshot — for errata, or for content added to shared files like feats and magic items — the books on your disk stay as they were. Settings shows a notice when this applies to you.
+
+To update them, open **Settings → Manage Sources** and choose **Re-download All**. This replaces every file for your selected books, so it takes noticeably longer than Apply. Uploaded custom sources are never touched.
+
+The notice is a local version comparison between the app and your data; it makes no network request. Grimoire only goes online when you download something.
+
 ## Uninstalling
 
 ```bash

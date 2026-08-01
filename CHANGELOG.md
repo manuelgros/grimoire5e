@@ -6,8 +6,11 @@
 ## New Features
 - **Ravenloft: The Horrors Within**: The new Ravenloft book is now available in Manage Sources. Installing it adds its 70 monsters (Azalin Rex, Ankhtepot, the Aberrant Death's Head and the rest) with their Info-tab lore, and seven subclasses — Artificer (Reanimator), Bard (College of Spirits), Cleric (Grave Domain), Ranger (Hollow Warden), Rogue (Phantom), Sorcerer (Shadow Sorcery) and Warlock (Undead Patron). Its 11 feats (Mist Walker, Touch of Death, Living Shadow, …) and two magic items (Ebonbane, Harkon's Bite) live in the shared data files; see below for how to pick those up.
 
+- **Data updates**: Manage Sources has a new **Re-download All** button that refreshes every file for your installed books, picking up errata and newly added content. Until now downloaded files were never replaced, so content added to shared data files (feats, magic items, variant rules) stayed invisible on existing installs no matter how many times you reopened Manage Sources. Settings also shows a one-line notice when the app ships a newer 5etools release than your downloaded data. The notice is a purely local version comparison — Grimoire still makes no network requests unless you ask it to download something
+
 ## Other Changes
-- Data is now fetched from 5etools v2.33.2 (was v2.25.0). New installs get the newer data for every book. Existing installs keep the files they already downloaded — only newly installed books are fetched fresh. To pick up the Horrors Within feats and magic items on an existing install, delete `feats.json` and `items.json` from your data directory and reopen Manage Sources.
+- Data is now fetched from 5etools v2.33.2 (was v2.25.0). New installs get the newer data for every book; existing installs can pick it up with **Manage Sources → Re-download All**
+- Network failures during a download now report what actually went wrong ("Could not reach the 5etools mirror", or the HTTP status and URL) instead of a raw socket error like `[Errno 8] nodename nor servname provided`
 
 ---
 

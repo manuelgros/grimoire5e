@@ -45,6 +45,27 @@ def get_sources_manifest() -> dict:
     return json.loads(manifest_path.read_text(encoding="utf-8"))
 
 
+def get_manifest_version() -> str:
+    """Return the 5etools release the bundled manifest points at."""
+    return get_sources_manifest().get("5etools_version", "")
+
+
+def is_data_outdated() -> bool:
+    """
+    Return True if the bundled manifest points at a newer 5etools release than the
+    one the installed data was downloaded from.
+
+    Purely a local comparison — the manifest ships inside the package and the
+    recorded version lives in config.json, so this never touches the network.
+    Installs predating version stamping have no 'data_version' and correctly
+    report as outdated.
+    """
+    cfg = load_config()
+    if not cfg.get("installed_sources"):
+        return False
+    return cfg.get("data_version") != get_manifest_version()
+
+
 def is_data_installed() -> bool:
     """Return True if data has been downloaded and config records installed sources."""
     cfg = load_config()

@@ -64,6 +64,7 @@ class ManageSourcesScreen(Screen):
             any_selected = any(src["id"] in self._installed_sources for src in self._manager.sources)
             with Horizontal(id="buttons"):
                 yield Button("Apply Changes", id="apply", variant="primary", disabled=not any_selected)
+                yield Button("Re-download All", id="refresh", variant="warning", disabled=not any_selected)
                 yield Button("Cancel", id="cancel", variant="error")
 
         yield Footer()
@@ -72,24 +73,19 @@ class ManageSourcesScreen(Screen):
 
     def on_key(self, event: events.Key) -> None:
         focused = self.focused
-        cancel_btn = self.query_one("#cancel", Button)
-        apply_btn = self.query_one("#apply", Button)
-
-        # Left/Right navigate between the two action buttons; Tab wraps back to checkboxes
         checkboxes = list(self.query(Checkbox))
-        if focused is apply_btn:
+        buttons = list(self.query("#buttons Button"))
+
+        # Left/Right navigate along the action button row; Tab wraps back to checkboxes
+        if focused in buttons:
+            idx = buttons.index(focused)
             if event.key == "right":
-                cancel_btn.focus()
+                if idx + 1 < len(buttons):
+                    buttons[idx + 1].focus()
                 event.stop()
-            elif event.key == "tab":
-                if checkboxes:
-                    checkboxes[0].focus()
-                    checkboxes[0].scroll_visible()
-                event.stop()
-            return
-        if focused is cancel_btn:
-            if event.key == "left":
-                apply_btn.focus()
+            elif event.key == "left":
+                if idx > 0:
+                    buttons[idx - 1].focus()
                 event.stop()
             elif event.key == "tab":
                 if checkboxes:
@@ -119,8 +115,9 @@ class ManageSourcesScreen(Screen):
             if idx % self._COLS > 0:
                 new_idx = idx - 1
         elif event.key == "tab":
-            apply_btn.focus()
-            apply_btn.scroll_visible()
+            if buttons:
+                buttons[0].focus()
+                buttons[0].scroll_visible()
             event.stop()
             return
 
@@ -132,10 +129,13 @@ class ManageSourcesScreen(Screen):
         if not self._downloading:
             any_selected = any(cb.value for cb in self.query(Checkbox))
             self.query_one("#apply", Button).disabled = not any_selected
+            self.query_one("#refresh", Button).disabled = not any_selected
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         if event.button.id == "apply" and not self._downloading:
             self._start_apply()
+        elif event.button.id == "refresh" and not self._downloading:
+            self._start_apply(force=True)
         elif event.button.id == "cancel":
             self.dismiss(None)
 
@@ -145,10 +145,10 @@ class ManageSourcesScreen(Screen):
     def _selected_sources(self) -> List[str]:
         return [cb.name for cb in self.query(Checkbox) if cb.value and cb.name]
 
-    def _start_apply(self) -> None:
+    def _start_apply(self, force: bool = False) -> None:
         self._downloading = True
-        self.query_one("#apply", Button).disabled = True
-        self.query_one("#cancel", Button).disabled = True
+        for btn in self.query("#buttons Button"):
+            btn.disabled = True
         sources = self._selected_sources()
 
         def progress_cb(file_path: str, current: int, total: int) -> None:
@@ -158,7 +158,7 @@ class ManageSourcesScreen(Screen):
 
         def run() -> None:
             try:
-                self._manager.download_sources(sources, progress_cb=progress_cb)
+                self._manager.download_sources(sources, progress_cb=progress_cb, force=force)
                 self.app.call_from_thread(self._on_complete, sources)
             except Exception as e:
                 self.app.call_from_thread(self._on_error, str(e))
@@ -184,8 +184,8 @@ class ManageSourcesScreen(Screen):
 
     def _on_error(self, message: str) -> None:
         self._downloading = False
-        self.query_one("#apply", Button).disabled = False
-        self.query_one("#cancel", Button).disabled = False
+        for btn in self.query("#buttons Button"):
+            btn.disabled = False
         self.query_one("#status", Static).update(
             f"[red]Error: {message}[/red]\n[dim]Check your internet connection and try again.[/dim]"
         )

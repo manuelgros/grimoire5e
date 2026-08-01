@@ -6,7 +6,7 @@ from textual.containers import Horizontal, Vertical, Grid
 from textual.message import Message
 from textual.widgets import Button, Checkbox, Select, Static
 
-from ..config import get_custom_sources, register_custom_source
+from ..config import get_custom_sources, is_data_outdated, register_custom_source
 from ..services import SOURCE_FULL
 from ..themes import GRIMOIRE_THEMES
 from ._grouped_select import GroupedSelect
@@ -66,6 +66,7 @@ class SettingsView(Vertical):
         yield Static(
             "Toggle books to include across all tabs. Changes take effect immediately."
         )
+        yield Static(self._update_notice_text(), id="data_update_notice")
         yield Static("")
         with Grid(id="source_list"):
             for code, title in SOURCE_FULL.items():
@@ -195,6 +196,7 @@ class SettingsView(Vertical):
         new_installed = new_installed | set(get_custom_sources().keys())
         self._installed_sources = new_installed
         self._refresh_source_grid()
+        self._refresh_update_notice()
         self.post_message(self.SourcesInstalled(new_installed))
 
     def _on_upload_closed(self, _result: Any = None) -> None:
@@ -230,6 +232,18 @@ class SettingsView(Vertical):
             if code not in self._installed_sources:
                 continue
             grid.mount(Checkbox(f"{name} [dim](custom)[/dim]", value=True, name=code))
+
+    def _update_notice_text(self) -> str:
+        """Notice shown when the bundled manifest is newer than the downloaded data."""
+        if not is_data_outdated():
+            return ""
+        return (
+            "[yellow]Newer 5etools data is available for your installed books. "
+            "Use Manage Sources → Re-download All to update.[/yellow]"
+        )
+
+    def _refresh_update_notice(self) -> None:
+        self.query_one("#data_update_notice", Static).update(self._update_notice_text())
 
     def _refresh_remove_button(self) -> None:
         custom = get_custom_sources()
