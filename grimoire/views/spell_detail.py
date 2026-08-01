@@ -126,21 +126,28 @@ class SpellDetailScreen(Screen):
         return ", ".join(parts) if parts else "—"
 
     def _strip_tags(self, text: str) -> str:
-        text = re.sub(r"\{@scaledamage ([^|]+)\|[^}]*\}", r"\1", text)
-        text = re.sub(r"\{@damage ([^}]+)\}", r"\1", text)
-        text = re.sub(r"\{@dice ([^}]+)\}", r"\1", text)
-        text = re.sub(r"\{@hit ([^}]+)\}", r"+\1", text)
-        text = re.sub(r"\{@dc ([^}]+)\}", r"DC \1", text)
-        text = re.sub(r"\{@condition ([^|}]+)(?:\|[^}]*)?\}", r"\1", text)
-        text = re.sub(r"\{@spell ([^|}]+)(?:\|[^}]*)?\}", r"\1", text)
-        text = re.sub(r"\{@creature ([^|}]+)(?:\|[^}]*)?\}", r"\1", text)
-        text = re.sub(r"\{@item ([^|}]+)(?:\|[^}]*)?\}", r"\1", text)
-        text = re.sub(r"\{@action ([^|}]+)(?:\|[^}]*)?\}", r"\1", text)
-        text = re.sub(r"\{@skill ([^|}]+)(?:\|[^}]*)?\}", r"\1", text)
-        text = re.sub(r"\{@feat ([^|}]+)(?:\|[^}]*)?\}", r"\1", text)
-        text = re.sub(r"\{@b ([^}]+)\}", r"\1", text)
-        text = re.sub(r"\{@i ([^}]+)\}", r"\1", text)
-        text = re.sub(r"\{@\w+ ([^|}]+)(?:\|[^}]*)?\}", r"\1", text)
+        # Brace-free patterns match only innermost tags, so looping resolves a
+        # nested tag before its wrapper — e.g. Find Familiar's
+        # "{@note Additional {@filter animal form choices|bestiary|…} …}".
+        for _ in range(4):
+            before = text
+            text = re.sub(r"\{@scaledamage ([^|{}]+)\|[^{}]*\}", r"\1", text)
+            text = re.sub(r"\{@damage ([^{}]+)\}", r"\1", text)
+            text = re.sub(r"\{@dice ([^{}]+)\}", r"\1", text)
+            text = re.sub(r"\{@hit ([^{}]+)\}", r"+\1", text)
+            text = re.sub(r"\{@dc ([^{}]+)\}", r"DC \1", text)
+            text = re.sub(r"\{@condition ([^|{}]+)(?:\|[^{}]*)?\}", r"\1", text)
+            text = re.sub(r"\{@spell ([^|{}]+)(?:\|[^{}]*)?\}", r"\1", text)
+            text = re.sub(r"\{@creature ([^|{}]+)(?:\|[^{}]*)?\}", r"\1", text)
+            text = re.sub(r"\{@item ([^|{}]+)(?:\|[^{}]*)?\}", r"\1", text)
+            text = re.sub(r"\{@action ([^|{}]+)(?:\|[^{}]*)?\}", r"\1", text)
+            text = re.sub(r"\{@skill ([^|{}]+)(?:\|[^{}]*)?\}", r"\1", text)
+            text = re.sub(r"\{@feat ([^|{}]+)(?:\|[^{}]*)?\}", r"\1", text)
+            text = re.sub(r"\{@b ([^{}]+)\}", r"\1", text)
+            text = re.sub(r"\{@i ([^{}]+)\}", r"\1", text)
+            text = re.sub(r"\{@\w+ ([^|{}]+)(?:\|[^{}]*)?\}", r"\1", text)
+            if text == before:
+                break
         return text
 
     def format_entries(self, entries: List[Any]) -> str:

@@ -143,17 +143,38 @@ class ItemDetailScreen(Screen):
             return str(self.item.inherits.get(key, m.group(0)))
 
         text = re.sub(r"\{=([^}]+)\}", _replace_inherits, text)
-        text = re.sub(r"\{@action ([^|}]+)(?:\|[^}]*)?\}", r"\1", text)
-        text = re.sub(r"\{@condition ([^|}]+)(?:\|[^}]*)?\}", r"\1", text)
-        text = re.sub(r"\{@item ([^|}]+)(?:\|[^}]*)?\}", r"\1", text)
-        text = re.sub(r"\{@spell ([^|}]+)(?:\|[^}]*)?\}", r"\1", text)
-        text = re.sub(r"\{@creature ([^|}]+)(?:\|[^}]*)?\}", r"\1", text)
-        text = re.sub(r"\{@damage ([^}]+)\}", r"\1", text)
-        text = re.sub(r"\{@dice ([^}]+)\}", r"\1", text)
-        text = re.sub(r"\{@dc ([^}]+)\}", r"DC \1", text)
-        text = re.sub(r"\{@hit ([^}]+)\}", r"+\1", text)
-        text = re.sub(r"\{@h\}", "", text)
-        text = re.sub(r"\{@\w+ ([^|}]+)(?:\|[^}]*)?\}", r"\1", text)
+
+        # A generic magic variant has no base item, so field references like
+        # {=dmgType} stay unresolved. Their braces would read as nesting and stop
+        # the surrounding tag from matching, so park them somewhere brace-free
+        # for the duration of the tag pass and put them back afterwards.
+        parked: List[str] = []
+
+        def _park(m: re.Match) -> str:
+            parked.append(m.group(0))
+            return f"\x00{len(parked) - 1}\x00"
+
+        text = re.sub(r"\{=[^{}]*\}", _park, text)
+
+        # Brace-free patterns match only innermost tags, so looping resolves a
+        # nested tag before its wrapper (e.g. Mace of Smiting's "{@note … {@link …}}").
+        for _ in range(4):
+            before = text
+            text = re.sub(r"\{@action ([^|{}]+)(?:\|[^{}]*)?\}", r"\1", text)
+            text = re.sub(r"\{@condition ([^|{}]+)(?:\|[^{}]*)?\}", r"\1", text)
+            text = re.sub(r"\{@item ([^|{}]+)(?:\|[^{}]*)?\}", r"\1", text)
+            text = re.sub(r"\{@spell ([^|{}]+)(?:\|[^{}]*)?\}", r"\1", text)
+            text = re.sub(r"\{@creature ([^|{}]+)(?:\|[^{}]*)?\}", r"\1", text)
+            text = re.sub(r"\{@damage ([^{}]+)\}", r"\1", text)
+            text = re.sub(r"\{@dice ([^{}]+)\}", r"\1", text)
+            text = re.sub(r"\{@dc ([^{}]+)\}", r"DC \1", text)
+            text = re.sub(r"\{@hit ([^{}]+)\}", r"+\1", text)
+            text = re.sub(r"\{@h\}", "", text)
+            text = re.sub(r"\{@\w+ ([^|{}]+)(?:\|[^{}]*)?\}", r"\1", text)
+            if text == before:
+                break
+
+        text = re.sub(r"\x00(\d+)\x00", lambda m: parked[int(m.group(1))], text)
         return text.strip()
 
     def _format_entries(self, entries: List[Any]) -> str:

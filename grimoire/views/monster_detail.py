@@ -250,6 +250,7 @@ class MonsterDetailScreen(Screen):
             text = re.sub(r"\{@actSaveSuccessOrFail\}", "On a failed or successful save:", text)
             text = re.sub(r"\{@hom\}", "Hit or Miss: ", text)
             text = re.sub(r"\{@hitYourSpellAttack\}", "your spell attack modifier", text)
+            text = re.sub(r"\{@dcYourSpellSave\}", "your spell save DC", text)
             text = re.sub(
                 r"\{@recharge\s*(\d+)?\}",
                 lambda m: f"(Recharge {m.group(1)}-6)" if m.group(1) else "(Recharge 6)",

@@ -39,10 +39,17 @@ class RuleDetailScreen(Screen):
             yield Button("Back", id="back")
 
     def _strip_tags(self, text: str) -> str:
-        text = re.sub(r"\{@condition ([^|}]+)(?:\|[^}]*)?\}", r"\1", text)
-        text = re.sub(r"\{@variantrule ([^|}]+)(?:\|[^}]*)?\}", r"\1", text)
-        text = re.sub(r"\{@action ([^|}]+)(?:\|[^}]*)?\}", r"\1", text)
-        text = re.sub(r"\{@\w+ ([^|}]+)(?:\|[^}]*)?\}", r"\1", text)
+        # Brace-free patterns match only innermost tags, so looping resolves a
+        # nested tag before its wrapper.
+        for _ in range(4):
+            before = text
+            text = re.sub(r"\{@condition ([^|{}]+)(?:\|[^{}]*)?\}", r"\1", text)
+            text = re.sub(r"\{@variantrule ([^|{}]+)(?:\|[^{}]*)?\}", r"\1", text)
+            text = re.sub(r"\{@action ([^|{}]+)(?:\|[^{}]*)?\}", r"\1", text)
+            text = re.sub(r"\{@h\}", "", text)
+            text = re.sub(r"\{@\w+ ([^|{}]+)(?:\|[^{}]*)?\}", r"\1", text)
+            if text == before:
+                break
         return text.strip()
 
     def _render_entries(self, entries: List[Any]) -> List[Static]:
