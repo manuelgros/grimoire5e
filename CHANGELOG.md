@@ -1,8 +1,4 @@
-# Changelog — Unreleased
-
-## Improvements
-- Added a test suite (`pip install --editable ".[dev]" && pytest`) covering the shared entry renderers, plus corpus tests that render every entry of every installed book and check for leaked data structures, leftover markup and silently dropped fields. They skip cleanly when no books are downloaded
-- The monster Info tab now follows the stat block's colour scheme — creature headings take the theme's section colour (the one used for Actions and Traits) and labels such as **Habitat:** and **Treasure:** take the theme's label colour (the one used for Armor Class and Hit Points), instead of everything being flat bold. Applies to every theme; the stat block itself is unchanged
+# Changelog — v0.4.0
 
 ## Bug Fixes
 - Fix cross-references showing the wrong wording — around 1,500 passages displayed a reference's internal name instead of the words the book actually prints. Text now reads "you finish a Short or Long Rest" rather than "a Short Rest or Long Rest", "as if you were concentrating on a spell" rather than "concentration on a spell", "behind total cover" rather than "behind Cover", "your Hit Point maximum" rather than "Hit Points maximum", and "a 30-foot Cube originating from you" rather than "a 30-foot Cube [Area of Effect] originating from you". Affects every content type — monsters, items, spells, class features, feats and rules
@@ -28,9 +24,12 @@
 
 - **Data updates**: Manage Sources has a new **Re-download All** button that refreshes every file for your installed books, picking up errata and newly added content. Until now downloaded files were never replaced, so content added to shared data files (feats, magic items, variant rules) stayed invisible on existing installs no matter how many times you reopened Manage Sources. Settings also shows a one-line notice when the app ships a newer 5etools release than your downloaded data. The notice is a purely local version comparison — Grimoire still makes no network requests unless you ask it to download something
 
-## Other Changes
+- **Color in the monster Info tab**: creature headings now take the theme's section color (the one used for Actions and Traits) and labels such as **Habitat:** and **Treasure:** take the theme's label color (the one used for Armor Class and Hit Points), instead of everything being flat bold. Applies to every theme; the stat block itself is unchanged
+
+## Changes
 - Data is now fetched from 5etools v2.33.2 (was v2.25.0). New installs get the newer data for every book; existing installs can pick it up with **Manage Sources → Re-download All**
 - Network failures during a download now report what actually went wrong ("Could not reach the 5etools mirror", or the HTTP status and URL) instead of a raw socket error like `[Errno 8] nodename nor servname provided`
+- Added a test suite for contributors (`pip install --editable ".[dev]" && pytest`) covering the shared entry renderers, plus corpus tests that render every entry of every installed book and check for leaked data structures, leftover markup and silently dropped fields. They skip cleanly when no books are downloaded
 
 ---
 

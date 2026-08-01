@@ -524,8 +524,8 @@ class MonsterDetailScreen(Screen):
         Render entry structures as markup.
 
         The stat block leaves headings plain bold, because its own section
-        headers already carry the colour. The Info tab passes the theme's
-        section and label colours so its headings and "Habitat:"-style labels
+        headers already carry the color. The Info tab passes the theme's
+        section and label colors so its headings and "Habitat:"-style labels
         line up with the stat block's visual hierarchy.
         """
         def heading(text: str) -> str:
