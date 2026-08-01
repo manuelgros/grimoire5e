@@ -194,7 +194,7 @@ XPHB · XDMG · XMM
 PHB · DMG · MM
 
 **Supplements**
-XGE · TCE · VGM · MTF · MPMM · FTD · BGG · VRGR · MOT · GGR · ERLW · EGW · SCC · BAM · AI · BMT
+XGE · TCE · VGM · MTF · MPMM · FTD · BGG · VRGR · RHW · MOT · GGR · ERLW · EGW · SCC · BAM · AI · BMT
 
 **Adventures**
 HotDQ · RoT · PotA · OotA · CoS · SKT · ToA · WDH · WDMM · BGDIA · IDRotF · WBtW · FRAiF

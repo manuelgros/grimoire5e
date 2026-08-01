@@ -1,3 +1,13 @@
+# Changelog — Unreleased
+
+## New Features
+- **Ravenloft: The Horrors Within**: The new Ravenloft book is now available in Manage Sources. Installing it adds its 70 monsters (Azalin Rex, Ankhtepot, the Aberrant Death's Head and the rest) with their Info-tab lore, and seven subclasses — Artificer (Reanimator), Bard (College of Spirits), Cleric (Grave Domain), Ranger (Hollow Warden), Rogue (Phantom), Sorcerer (Shadow Sorcery) and Warlock (Undead Patron). Its 11 feats (Mist Walker, Touch of Death, Living Shadow, …) and two magic items (Ebonbane, Harkon's Bite) live in the shared data files; see below for how to pick those up.
+
+## Other Changes
+- Data is now fetched from 5etools v2.33.2 (was v2.25.0). New installs get the newer data for every book. Existing installs keep the files they already downloaded — only newly installed books are fetched fresh. To pick up the Horrors Within feats and magic items on an existing install, delete `feats.json` and `items.json` from your data directory and reopen Manage Sources.
+
+---
+
 # Changelog — v0.3.1
 
 ## Bug Fixes

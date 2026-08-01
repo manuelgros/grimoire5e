@@ -1,7 +1,7 @@
 {
   "format_version": 1,
-  "5etools_version": "v2.25.0",
-  "base_url": "https://raw.githubusercontent.com/5etools-mirror-3/5etools-src/v2.25.0/data",
+  "5etools_version": "v2.33.2",
+  "base_url": "https://raw.githubusercontent.com/5etools-mirror-3/5etools-src/v2.33.2/data",
   "global_files": [
     "conditionsdiseases.json",
     "variantrules.json",
@@ -27,6 +27,7 @@
     {"id":"FTD","name":"Fizban's Treasury of Dragons","default":false,"files":["spells/spells-ftd.json","bestiary/bestiary-ftd.json","bestiary/fluff-bestiary-ftd.json","class/class-monk.json","class/class-ranger.json"]},
     {"id":"BGG","name":"Bigby Presents: Glory of the Giants","default":false,"files":["bestiary/bestiary-bgg.json","bestiary/fluff-bestiary-bgg.json","class/class-barbarian.json"]},
     {"id":"VRGR","name":"Van Richten's Guide to Ravenloft","default":false,"files":["bestiary/bestiary-vrgr.json","bestiary/fluff-bestiary-vrgr.json","class/class-bard.json","class/class-warlock.json"]},
+    {"id":"RHW","name":"Ravenloft: The Horrors Within","default":false,"files":["bestiary/bestiary-rhw.json","bestiary/fluff-bestiary-rhw.json","class/class-artificer.json","class/class-bard.json","class/class-cleric.json","class/class-ranger.json","class/class-rogue.json","class/class-sorcerer.json","class/class-warlock.json"]},
     {"id":"MOT","name":"Mythic Odysseys of Theros","default":false,"files":["bestiary/bestiary-mot.json","bestiary/fluff-bestiary-mot.json"]},
     {"id":"GGR","name":"Guildmasters' Guide to Ravnica","default":false,"files":["spells/spells-ggr.json","bestiary/bestiary-ggr.json","bestiary/fluff-bestiary-ggr.json"]},
     {"id":"ERLW","name":"Eberron: Rising from the Last War","default":false,"files":["bestiary/bestiary-erlw.json","bestiary/fluff-bestiary-erlw.json"]},
