@@ -112,8 +112,7 @@ class QuickSearchView(Vertical):
             school = _SCHOOLS.get(item.school, item.school)
             return f"[S] {item.name}  •  {level} {school}  •  {src}"
         if type_key == "feat":
-            cat = item.category or "-"
-            return f"[F] {item.name}  •  {cat}  •  {src}"
+            return f"[F] {item.name}  •  {item.category_display}  •  {src}"
         if type_key == "classfeature":
             who = item.class_name
             if item.is_subclass and item.subclass_display:

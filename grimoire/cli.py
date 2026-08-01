@@ -50,6 +50,27 @@ def main() -> None:
             _run_app(data_dir=get_data_dir(), installed_sources=installed)
 
 
+# Singular / plural names for the content types import_source can return.
+_CONTENT_LABELS = {
+    "spell":           ("spell", "spells"),
+    "monster":         ("monster", "monsters"),
+    "legendaryGroup":  ("legendary group", "legendary groups"),
+    "item":            ("magic item", "magic items"),
+    "baseitem":        ("base item", "base items"),
+    "magicvariant":    ("magic variant", "magic variants"),
+    "feat":            ("feat", "feats"),
+    "optionalfeature": ("optional feature", "optional features"),
+    "condition":       ("condition", "conditions"),
+    "disease":         ("disease", "diseases"),
+    "status":          ("status", "statuses"),
+}
+
+
+def _describe_count(key: str, count: int) -> str:
+    singular, plural = _CONTENT_LABELS.get(key, (key, f"{key}s"))
+    return f"{count} {singular if count == 1 else plural}"
+
+
 def _import_source(json_path: Path) -> None:
     from .config import is_data_installed, get_data_dir, load_config, register_custom_source
     from .services.data_manager import DataManager
@@ -74,9 +95,9 @@ def _import_source(json_path: Path) -> None:
     register_custom_source(result["source"], result["name"])
 
     counts = result["counts"]
-    parts = [f"{v} {k}s" for k, v in counts.items()]
+    parts = [_describe_count(k, v) for k, v in counts.items()]
     print(f"Imported {', '.join(parts)} from '{result['name']}' ({result['source']}).")
-    print(f"Run 'grimoire' to browse the new content.")
+    print("Run 'grimoire' to browse the new content.")
 
 
 def _run_app(data_dir: Path, installed_sources=None) -> None:

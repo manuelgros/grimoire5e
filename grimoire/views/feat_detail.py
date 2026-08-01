@@ -8,22 +8,10 @@ from textual.containers import ScrollableContainer, Vertical
 from textual.screen import Screen
 from textual.widgets import Button, Static
 
-from ..models import Feat
+from ..models import Feat, FEAT_CATEGORY_LABELS as CATEGORY_LABELS
 from ..services import SOURCE_FULL
 from ..themes import THEME_LABEL_COLORS, _DEFAULT_LABEL_COLOR
 from ._entry_format import format_table
-
-# Mirrors Parser.FEAT_CATEGORY_TO_FULL in the 5etools source
-CATEGORY_LABELS = {
-    "D": "Dragonmark",
-    "DG": "Dark Gift",
-    "G": "General",
-    "O": "Origin",
-    "FS": "Fighting Style",
-    "FS:P": "Fighting Style (Paladin)",
-    "FS:R": "Fighting Style (Ranger)",
-    "EB": "Epic Boon",
-}
 
 ABILITY_MAP = {
     "str": "Strength", "dex": "Dexterity", "con": "Constitution",
@@ -52,7 +40,7 @@ class FeatDetailScreen(Screen):
         with Vertical():
             yield Static(f"[bold]{ft.name}[/bold]", classes="title")
             if ft.category:
-                yield Static(f"[bold]{CATEGORY_LABELS.get(ft.category, ft.category)}[/bold]")
+                yield Static(f"[bold]{ft.category_display}[/bold]")
             if ft.repeatable:
                 yield Static("[dim]Repeatable[/dim]")
             if ft.has_prerequisite:
