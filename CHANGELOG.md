@@ -1,6 +1,9 @@
 # Changelog — Unreleased
 
 ## Bug Fixes
+- Fix feat detail views dumping raw data instead of a table — any feat whose description contains a table (Living Shadow and Second Skin from the new Ravenloft book, but also Crafter in the 2024 Player's Handbook, Rune Shaper, Strixhaven Initiate, the Eberron dragonmark feats and 24 in total) printed a line of Python-looking gibberish beginning `{'type': 'table', …}` where the table should have been. Tables now render with aligned columns, a heading and a rule
+- Fix feats showing "Prerequisite: None" when they do have one — 28 feats were affected, including Heavily Armored, Heavy Armor Master, Medium Armor Master and Moderately Armored from the 2014 Player's Handbook, Fighting Initiate from Tasha's, every dragonmark feat, and the new Ravenloft feats. Armor and weapon proficiency requirements, campaign settings ("Ravenloft campaign"), spellcasting features and dragonmark exclusivity are now all spelled out
+- Fix the feat category showing an internal code — Ravenloft's Dark Gifts displayed as `DG` and Eberron's dragonmark feats as `D`
 - Fix custom uploaded sources disappearing after using Manage Sources — applying changes there rewrote the installed-source list from the official checkboxes only, silently dropping every uploaded book. The content stayed on disk and the source was still listed under Settings during that session, but on the next launch its spells, monsters and items vanished from every tab and its toggle was gone from Settings. Uploaded sources are now preserved when applying changes, and removing one still removes it for good
 
 ## New Features

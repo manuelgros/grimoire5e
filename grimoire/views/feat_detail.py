@@ -11,8 +11,12 @@ from textual.widgets import Button, Static
 from ..models import Feat
 from ..services import SOURCE_FULL
 from ..themes import THEME_LABEL_COLORS, _DEFAULT_LABEL_COLOR
+from ._entry_format import format_table
 
+# Mirrors Parser.FEAT_CATEGORY_TO_FULL in the 5etools source
 CATEGORY_LABELS = {
+    "D": "Dragonmark",
+    "DG": "Dark Gift",
     "G": "General",
     "O": "Origin",
     "FS": "Fighting Style",
@@ -97,7 +101,35 @@ class FeatDetailScreen(Screen):
                     parts.append(self._strip_tags(entry))
                 elif key == "other":
                     parts.append(str(val))
+                elif key == "campaign":
+                    campaigns = val if isinstance(val, list) else [val]
+                    parts.append(" or ".join(str(c) for c in campaigns) + " campaign")
+                elif key == "proficiency":
+                    parts.append(self._format_proficiency(val))
+                elif key == "spellcastingFeature":
+                    if val:
+                        parts.append("Spellcasting feature")
+                elif key == "featCategory":
+                    cats = [CATEGORY_LABELS.get(c, c) for c in val]
+                    parts.append(" or ".join(cats) + " feat")
+                elif key == "exclusiveFeatCategory":
+                    cats = [CATEGORY_LABELS.get(c, c) for c in val]
+                    parts.append("no other " + " or ".join(cats) + " feat")
         return ", ".join(parts) if parts else "None"
+
+    def _format_proficiency(self, profs: List) -> str:
+        parts = []
+        for prof in profs:
+            for kind, val in prof.items():
+                if kind == "armor":
+                    # "shield" is an item, not an armor category
+                    label = f"{val} armor" if val != "shield" else val
+                elif kind in {"weapon", "weaponGroup"}:
+                    label = f"{val} weapon"
+                else:
+                    label = str(val)
+                parts.append(f"{label} proficiency".capitalize())
+        return ", ".join(parts)
 
     def _format_ability(self, ability: List) -> str:
         parts = []
@@ -147,9 +179,18 @@ class FeatDetailScreen(Screen):
                         raw = entry.get("entry", "")
                         body = self._strip_tags(raw) if isinstance(raw, str) else render(raw)
                     return f"[bold {lc}]{name}.[/bold {lc}] {body}" if name else body
+                if e_type == "table":
+                    return format_table(entry, self._strip_tags, lc)
                 if e_type in {"entries", "section"}:
                     header = entry.get("name")
-                    body = "\n".join(render(e) for e in entry.get("entries", []))
+                    parts = []
+                    for e in entry.get("entries", []):
+                        text = render(e)
+                        # Set tables off from the prose that introduces them
+                        if parts and isinstance(e, dict) and e.get("type") == "table":
+                            text = "\n" + text
+                        parts.append(text)
+                    body = "\n".join(parts)
                     return f"[bold {lc}]{header}[/bold {lc}]\n{body}" if header else body
                 if "entries" in entry:
                     return "\n".join(render(e) for e in entry["entries"])
