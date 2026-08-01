@@ -11,7 +11,7 @@ from textual.widgets import Button, Static
 from ..models import Spell
 from ..services import SOURCE_FULL
 from ..themes import THEME_LABEL_COLORS, _DEFAULT_LABEL_COLOR
-from ._entry_format import format_table
+from ._entry_format import format_quote, format_table
 
 
 class SpellDetailScreen(Screen):
@@ -162,7 +162,9 @@ class SpellDetailScreen(Screen):
                     return "\n".join(f"- {render_entry(e)}" for e in entry.get("items", []))
                 if e_type == "table":
                     return format_table(entry, self._strip_tags, self._label_color(), render_entry)
-                if e_type in {"entries", "section"}:
+                if e_type == "quote":
+                    return format_quote(entry, render_entry, self._strip_tags)
+                if e_type in {"entries", "section", "inset", "insetReadaloud"}:
                     header = entry.get("name")
                     body = "\n".join(render_entry(e) for e in entry.get("entries", []))
                     if header:

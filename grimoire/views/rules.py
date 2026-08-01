@@ -10,7 +10,7 @@ from textual.widgets import Button, Input, Label, ListItem, Select, Static
 from ..services import SearchService, SOURCE_FULL
 from ..models import Rule
 from ..themes import THEME_LABEL_COLORS, _DEFAULT_LABEL_COLOR
-from ._entry_format import format_table
+from ._entry_format import format_quote, format_table
 from .base import BaseListView
 
 
@@ -75,7 +75,7 @@ class RuleDetailScreen(Screen):
                         ))
                     )
                     widgets.append(Static(""))
-                elif e_type in {"entries", "section"}:
+                elif e_type in {"entries", "section", "inset", "insetReadaloud"}:
                     header = entry.get("name")
                     if header:
                         lc = self._label_color()
@@ -100,7 +100,7 @@ class RuleDetailScreen(Screen):
                 return "\n".join(
                     f"  • {self._inline_render(i)}" for i in entry.get("items", [])
                 )
-            if e_type == "item":
+            if e_type in {"item", "itemSub"}:
                 # Named bullet, e.g. "Fever. The creature gains 1 Exhaustion level."
                 name = self._strip_tags(str(entry.get("name", "")))
                 if "entries" in entry:
@@ -108,14 +108,21 @@ class RuleDetailScreen(Screen):
                 else:
                     body = self._inline_render(entry.get("entry", ""))
                 lc = self._label_color()
-                return f"[bold {lc}]{name}.[/bold {lc}] {body}" if name else body
-            if e_type in {"entries", "section"}:
+                if not name:
+                    return body
+                sep = "" if name[-1] in ".:!?" else "."
+                if e_type == "itemSub":
+                    return f"[italic]{name + sep}[/italic] {body}"
+                return f"[bold {lc}]{name + sep}[/bold {lc}] {body}"
+            if e_type in {"entries", "section", "inset", "insetReadaloud"}:
                 header = entry.get("name")
                 body = "\n".join(self._inline_render(e) for e in entry.get("entries", []))
                 lc = self._label_color()
                 if header:
                     return f"[bold {lc}]{self._strip_tags(str(header))}[/bold {lc}]\n{body}"
                 return body
+            if e_type == "quote":
+                return format_quote(entry, self._inline_render, self._strip_tags)
             if e_type == "table":
                 return format_table(
                     entry, self._strip_tags, self._label_color(), self._inline_render

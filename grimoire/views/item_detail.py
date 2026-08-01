@@ -11,7 +11,7 @@ from textual.widgets import Button, Static
 from ..models import Item
 from ..services import SOURCE_FULL
 from ..themes import THEME_LABEL_COLORS, _DEFAULT_LABEL_COLOR
-from ._entry_format import format_table
+from ._entry_format import format_quote, format_table
 
 _RARITY_COLORS = {
     "Uncommon":  "#55cc55",
@@ -185,17 +185,24 @@ class ItemDetailScreen(Screen):
                 e_type = entry.get("type")
                 if e_type == "list":
                     return "\n".join(f"- {render(e)}" for e in entry.get("items", []))
-                if e_type == "item":
+                if e_type in {"item", "itemSub"}:
                     name = self._strip_tags(str(entry.get("name", "")))
                     if "entries" in entry:
                         body = "\n".join(render(e) for e in entry["entries"])
                     else:
                         raw = entry.get("entry", "")
                         body = self._strip_tags(raw) if isinstance(raw, str) else render(raw)
-                    return f"[bold]{name}.[/bold] {body}" if name else body
+                    if not name:
+                        return body
+                    sep = "" if name[-1] in ".:!?" else "."
+                    if e_type == "itemSub":
+                        return f"[italic]{name + sep}[/italic] {body}"
+                    return f"[bold]{name + sep}[/bold] {body}"
+                if e_type == "quote":
+                    return format_quote(entry, render, self._strip_tags)
                 if e_type == "table":
                     return format_table(entry, self._strip_tags, self._label_color(), render)
-                if e_type in {"entries", "section"}:
+                if e_type in {"entries", "section", "inset", "insetReadaloud"}:
                     header = entry.get("name")
                     body = "\n".join(render(e) for e in entry.get("entries", []))
                     if header:

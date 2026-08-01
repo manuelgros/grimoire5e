@@ -11,7 +11,7 @@ from textual.widgets import Button, Static, TabbedContent, TabPane, Tabs
 from ..models import Monster
 from ..services import SOURCE_FULL
 from ..themes import THEME_LABEL_COLORS, THEME_SECTION_COLORS, _DEFAULT_LABEL_COLOR, _DEFAULT_SECTION_COLOR
-from ._entry_format import format_table
+from ._entry_format import format_quote, format_table
 
 _ATK_MAP = {
     "m":     "Melee Attack",
@@ -567,7 +567,9 @@ class MonsterDetailScreen(Screen):
                     if list_name:
                         return f"{label(self._strip_tags(str(list_name)))}\n{body}"
                     return body
-                if e_type == "item":
+                if e_type in {"item", "itemSub"}:
+                    # itemSub is a sub-entry of the item above it (a beholder's
+                    # individual eye rays); 5etools italicises it rather than bolding
                     name = self._strip_tags(str(entry.get("name", "")))
                     if "entries" in entry:
                         body = "\n".join(render(e) for e in entry["entries"])
@@ -578,10 +580,14 @@ class MonsterDetailScreen(Screen):
                         return body
                     # Names already ending in punctuation don't want another dot
                     sep = "" if name[-1] in ".:!?" else "."
+                    if e_type == "itemSub":
+                        return f"[italic]{name + sep}[/italic] {body}"
                     return f"{label(name + sep)} {body}"
+                if e_type == "quote":
+                    return format_quote(entry, render, self._strip_tags)
                 if e_type == "table":
                     return format_table(entry, self._strip_tags, self._label_color(), render)
-                if e_type in {"entries", "section"}:
+                if e_type in {"entries", "section", "inset", "insetReadaloud"}:
                     header = entry.get("name")
                     body = "\n\n".join(render(e) for e in entry.get("entries", []))
                     if header:

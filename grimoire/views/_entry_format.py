@@ -49,6 +49,27 @@ def format_ability_line(entry: dict, label_color: str) -> str:
     return f"[bold {label_color}]{label}[/bold {label_color}] = {tail}"
 
 
+def format_quote(
+    entry: dict,
+    render: Callable[[Any], str],
+    strip: Callable[[str], str],
+) -> str:
+    """
+    Render a `{"type": "quote"}` entry, keeping its attribution.
+
+    5etools sets the quoted text in italics and follows it with "— by, from".
+    Dropping `by`/`from` silently loses the speaker on ~530 quotes.
+    """
+    body = "\n".join(render(e) for e in entry.get("entries", []))
+    if not entry.get("skipMarks"):
+        body = f"“{body}”"
+
+    credit = [strip(str(entry[key])) for key in ("by", "from") if entry.get(key)]
+    if not credit:
+        return body
+    return f"{body}\n[italic]— {', '.join(credit)}[/italic]"
+
+
 def format_roll_cell(cell: dict, strip: Callable[[str], str]) -> str:
     """
     Render a `{"type": "cell"}` table cell, mirroring Renderer's logic in
