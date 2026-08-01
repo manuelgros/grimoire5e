@@ -11,6 +11,7 @@ from textual.widgets import Button, Static
 from ..models import Spell
 from ..services import SOURCE_FULL
 from ..themes import THEME_LABEL_COLORS, _DEFAULT_LABEL_COLOR
+from ._entry_format import format_table
 
 
 class SpellDetailScreen(Screen):
@@ -145,19 +146,6 @@ class SpellDetailScreen(Screen):
     def format_entries(self, entries: List[Any]) -> str:
         """Convert entry objects to formatted text."""
 
-        def render_table(entry: dict) -> str:
-            lines = []
-            caption = entry.get("caption")
-            if caption:
-                lines.append(f"[bold]{caption}[/bold]")
-            col_labels = entry.get("colLabels", [])
-            if col_labels:
-                lines.append("  ".join(f"[bold]{self._strip_tags(c)}[/bold]" for c in col_labels))
-                lines.append("─" * 40)
-            for row in entry.get("rows", []):
-                lines.append("  ".join(self._strip_tags(str(cell)) for cell in row))
-            return "\n".join(lines)
-
         def render_entry(entry: Any) -> str:
             if isinstance(entry, str):
                 return self._strip_tags(entry)
@@ -166,7 +154,7 @@ class SpellDetailScreen(Screen):
                 if e_type == "list":
                     return "\n".join(f"- {render_entry(e)}" for e in entry.get("items", []))
                 if e_type == "table":
-                    return render_table(entry)
+                    return format_table(entry, self._strip_tags, self._label_color(), render_entry)
                 if e_type in {"entries", "section"}:
                     header = entry.get("name")
                     body = "\n".join(render_entry(e) for e in entry.get("entries", []))

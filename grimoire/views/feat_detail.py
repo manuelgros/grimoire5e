@@ -180,7 +180,7 @@ class FeatDetailScreen(Screen):
                         body = self._strip_tags(raw) if isinstance(raw, str) else render(raw)
                     return f"[bold {lc}]{name}.[/bold {lc}] {body}" if name else body
                 if e_type == "table":
-                    return format_table(entry, self._strip_tags, lc)
+                    return format_table(entry, self._strip_tags, lc, render)
                 if e_type in {"entries", "section"}:
                     header = entry.get("name")
                     parts = []

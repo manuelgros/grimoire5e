@@ -10,6 +10,7 @@ from textual.widgets import Button, Input, Label, ListItem, Select, Static
 from ..services import SearchService, SOURCE_FULL
 from ..models import Rule
 from ..themes import THEME_LABEL_COLORS, _DEFAULT_LABEL_COLOR
+from ._entry_format import format_table
 from .base import BaseListView
 
 
@@ -61,7 +62,11 @@ class RuleDetailScreen(Screen):
                     widgets.append(Static(lines))
                     widgets.append(Static(""))
                 elif e_type == "table":
-                    widgets.append(Static(self._format_table(entry)))
+                    widgets.append(
+                        Static(format_table(
+                            entry, self._strip_tags, self._label_color(), self._inline_render
+                        ))
+                    )
                     widgets.append(Static(""))
                 elif e_type in {"entries", "section"}:
                     header = entry.get("name")
@@ -97,17 +102,6 @@ class RuleDetailScreen(Screen):
         if isinstance(entry, list):
             return "\n".join(self._inline_render(e) for e in entry)
         return str(entry)
-
-    def _format_table(self, table: dict) -> str:
-        col_labels = table.get("colLabels", [])
-        rows = table.get("rows", [])
-        lines = []
-        if col_labels:
-            lines.append("  ".join(f"[bold]{c}[/bold]" for c in col_labels))
-            lines.append("─" * 40)
-        for row in rows:
-            lines.append("  ".join(str(cell) for cell in row))
-        return "\n".join(lines)
 
     def on_key(self, event: events.Key) -> None:
         if event.key == "escape":

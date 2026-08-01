@@ -11,6 +11,7 @@ from textual.widgets import Button, Static
 from ..models import Item
 from ..services import SOURCE_FULL
 from ..themes import THEME_LABEL_COLORS, _DEFAULT_LABEL_COLOR
+from ._entry_format import format_table
 
 _RARITY_COLORS = {
     "Uncommon":  "#55cc55",
@@ -170,6 +171,8 @@ class ItemDetailScreen(Screen):
                         raw = entry.get("entry", "")
                         body = self._strip_tags(raw) if isinstance(raw, str) else render(raw)
                     return f"[bold]{name}.[/bold] {body}" if name else body
+                if e_type == "table":
+                    return format_table(entry, self._strip_tags, self._label_color(), render)
                 if e_type in {"entries", "section"}:
                     header = entry.get("name")
                     body = "\n".join(render(e) for e in entry.get("entries", []))
