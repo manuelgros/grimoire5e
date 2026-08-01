@@ -1,5 +1,8 @@
 # Changelog — Unreleased
 
+## Bug Fixes
+- Fix custom uploaded sources disappearing after using Manage Sources — applying changes there rewrote the installed-source list from the official checkboxes only, silently dropping every uploaded book. The content stayed on disk and the source was still listed under Settings during that session, but on the next launch its spells, monsters and items vanished from every tab and its toggle was gone from Settings. Uploaded sources are now preserved when applying changes, and removing one still removes it for good
+
 ## New Features
 - **Ravenloft: The Horrors Within**: The new Ravenloft book is now available in Manage Sources. Installing it adds its 70 monsters (Azalin Rex, Ankhtepot, the Aberrant Death's Head and the rest) with their Info-tab lore, and seven subclasses — Artificer (Reanimator), Bard (College of Spirits), Cleric (Grave Domain), Ranger (Hollow Warden), Rogue (Phantom), Sorcerer (Shadow Sorcery) and Warlock (Undead Patron). Its 11 feats (Mist Walker, Touch of Death, Living Shadow, …) and two magic items (Ebonbane, Harkon's Bite) live in the shared data files; see below for how to pick those up.
 

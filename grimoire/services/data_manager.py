@@ -39,7 +39,11 @@ class DataManager:
 
     def save_installed_sources(self, source_ids: List[str]) -> None:
         cfg = load_config()
-        cfg["installed_sources"] = source_ids
+        # Custom uploaded sources aren't in the manifest, so they never appear in
+        # source_ids. Preserve them, or applying changes in Manage Sources would
+        # drop them from installed_sources and hide their content on next launch.
+        custom = set(cfg.get("custom_sources", {}))
+        cfg["installed_sources"] = list(source_ids) + sorted(custom - set(source_ids))
         cfg["data_dir"] = str(self.data_dir)
         save_config(cfg)
 
